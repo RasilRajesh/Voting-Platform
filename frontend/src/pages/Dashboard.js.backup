@@ -1,0 +1,281 @@
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import axios from 'axios';
+import { toast } from 'react-toastify';
+import Navbar from '../components/Navbar';
+import { useAuth } from '../context/AuthContext';
+
+const Dashboard = () => {
+  const [candidates, setCandidates] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState('');
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    fetchCandidates();
+  }, []);
+
+  const fetchCandidates = async () => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const response = await axios.get('http://localhost:8000/api/candidates/', {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      setCandidates(response.data);
+    } catch (err) {
+      setError('Failed to load candidates. Please try again.');
+      toast.error('Failed to load candidates');
+      console.error('Error fetching candidates:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleVoteClick = () => {
+    navigate('/vote');
+  };
+
+  if (loading) {
+    return (
+      <>
+        <Navbar />
+        <div className="loading">Loading candidates...</div>
+      </>
+    );
+  }
+
+  if (error) {
+    return (
+      <>
+        <Navbar />
+        <div className="container">
+          <div className="error-message">{error}</div>
+        </div>
+      </>
+    );
+  }
+
+  return (
+    <>
+      <Navbar />
+      
+      {/* Hero Section */}
+      <div style={{
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+        padding: '80px 24px',
+        textAlign: 'center',
+        color: 'white',
+        marginBottom: '60px'
+      }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <h1 style={{
+            fontSize: '48px',
+            fontWeight: '700',
+            marginBottom: '20px',
+            lineHeight: '1.2',
+            letterSpacing: '-1px'
+          }}>
+            Secure Online Voting Platform
+          </h1>
+          <p style={{
+            fontSize: '20px',
+            marginBottom: '40px',
+            opacity: 0.95,
+            fontWeight: '400'
+          }}>
+            Vote safely, transparently, and efficiently
+          </p>
+          {!user?.has_voted && (
+            <button
+              onClick={handleVoteClick}
+              style={{
+                padding: '18px 48px',
+                fontSize: '18px',
+                fontWeight: '700',
+                background: 'white',
+                color: '#667eea',
+                border: 'none',
+                borderRadius: '50px',
+                cursor: 'pointer',
+                boxShadow: '0 8px 24px rgba(0,0,0,0.15)',
+                transition: 'all 0.3s ease',
+                letterSpacing: '0.5px'
+              }}
+              onMouseOver={(e) => {
+                e.target.style.transform = 'translateY(-4px)';
+                e.target.style.boxShadow = '0 12px 32px rgba(0,0,0,0.2)';
+              }}
+              onMouseOut={(e) => {
+                e.target.style.transform = 'translateY(0)';
+                e.target.style.boxShadow = '0 8px 24px rgba(0,0,0,0.15)';
+              }}
+            >
+              Cast Your Vote Now
+            </button>
+          )}
+        </div>
+      </div>
+
+      <div className="container">
+        {/* Feature Cards */}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+          gap: '32px',
+          marginBottom: '60px'
+        }}>
+          <div className="card" style={{ textAlign: 'center' }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '16px',
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              margin: '0 auto 20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '32px'
+            }}>
+              🔒
+            </div>
+            <h3 style={{ marginBottom: '12px', color: '#2d3748', fontSize: '20px' }}>Secure Voting</h3>
+            <p style={{ color: '#718096', lineHeight: '1.6' }}>Your vote is encrypted and completely secure</p>
+          </div>
+          
+          <div className="card" style={{ textAlign: 'center' }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '16px',
+              background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+              margin: '0 auto 20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '32px'
+            }}>
+              📊
+            </div>
+            <h3 style={{ marginBottom: '12px', color: '#2d3748', fontSize: '20px' }}>Real-Time Results</h3>
+            <p style={{ color: '#718096', lineHeight: '1.6' }}>See live voting statistics and analytics</p>
+          </div>
+          
+          <div className="card" style={{ textAlign: 'center' }}>
+            <div style={{
+              width: '64px',
+              height: '64px',
+              borderRadius: '16px',
+              background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+              margin: '0 auto 20px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              fontSize: '32px'
+            }}>
+              ✅
+            </div>
+            <h3 style={{ marginBottom: '12px', color: '#2d3748', fontSize: '20px' }}>Verified Candidates</h3>
+            <p style={{ color: '#718096', lineHeight: '1.6' }}>All candidates are verified and authenticated</p>
+          </div>
+        </div>
+        
+        {user?.has_voted && (
+          <div style={{
+            background: 'linear-gradient(135deg, #a8edea 0%, #fed6e3 100%)',
+            border: 'none',
+            borderRadius: '16px',
+            padding: '24px',
+            marginBottom: '40px',
+            textAlign: 'center'
+          }}>
+            <p style={{ color: '#2d3748', margin: 0, fontSize: '16px', fontWeight: '600' }}>
+              ✓ You have already voted. Thank you for participating!
+            </p>
+          </div>
+        )}
+
+        {candidates.length === 0 ? (
+          <div style={{ textAlign: 'center', padding: '60px 20px' }}>
+            <h3 style={{ color: '#4a5568', marginBottom: '12px' }}>No candidates available</h3>
+            <p style={{ color: '#718096' }}>Please check back later.</p>
+          </div>
+        ) : (
+          <>
+            <h2 style={{
+              textAlign: 'center',
+              marginBottom: '40px',
+              fontSize: '32px',
+              fontWeight: '700',
+              color: '#2d3748',
+              letterSpacing: '-0.5px'
+            }}>
+              Meet Our Candidates
+            </h2>
+            <div className="candidates-grid">
+              {candidates.map((candidate) => (
+                <div key={candidate.id} className="candidate-card">
+                  {candidate.profile_image_url ? (
+                    <img
+                      src={candidate.profile_image_url}
+                      alt={candidate.name}
+                      className="candidate-image"
+                    />
+                  ) : (
+                    <div
+                      className="candidate-image"
+                      style={{
+                        backgroundColor: '#e2e8f0',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '48px',
+                        color: '#667eea',
+                        fontWeight: '700'
+                      }}
+                    >
+                      {candidate.name.charAt(0).toUpperCase()}
+                    </div>
+                  )}
+                  <h3 className="candidate-name">{candidate.name}</h3>
+                  <div style={{ marginBottom: '10px', fontSize: '18px', fontWeight: 'bold', color: '#28a745' }}>
+                    {candidate.vote_count || 0} votes
+                  </div>
+                  <a
+                    href={candidate.linkedin_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="candidate-linkedin"
+                  >
+                    View LinkedIn Profile
+                  </a>
+                  <div style={{ marginTop: '20px' }}>
+                    <button
+                      onClick={handleVoteClick}
+                      className="btn btn-primary"
+                      disabled={user?.has_voted}
+                    >
+                      {user?.has_voted ? 'Already Voted' : 'Vote Now'}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div style={{ textAlign: 'center', marginTop: '30px' }}>
+              <button
+                onClick={() => navigate('/voters')}
+                className="btn btn-secondary"
+              >
+                View All Voters
+              </button>
+            </div>
+          </>
+        )}
+      </div>
+    </>
+  );
+};
+
+export default Dashboard;
+

@@ -26,7 +26,7 @@ const Login = () => {
     try {
       const response = await axios.post('http://127.0.0.1:8000/auth/login/', formData);
       login(response.data.user, response.data.tokens);
-      navigate('/dashboard');
+      navigate('/vote');
     } catch (error) {
       setError(error.response?.data?.detail || 'Login failed. Please check your credentials.');
     } finally {
@@ -40,7 +40,7 @@ const Login = () => {
         credential: credentialResponse.credential,
       });
       login(response.data.user, response.data.tokens);
-      navigate('/dashboard');
+      navigate('/vote');
     } catch (error) {
       setError('Google login failed. Please try again.');
     }

@@ -33,7 +33,7 @@ const Navbar = () => {
         alignItems: 'center',
         justifyContent: 'space-between'
       }}>
-        <Link to="/dashboard" style={{
+        <Link to="/vote" style={{
           fontSize: '22px',
           fontWeight: '700',
           background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
@@ -62,18 +62,7 @@ const Navbar = () => {
           gap: '40px'
         }}>
           <div style={{ display: 'flex', gap: '32px' }}>
-            <Link to="/dashboard" style={{
-              color: '#64748B',
-              fontWeight: '600',
-              textDecoration: 'none',
-              transition: 'color 0.2s ease',
-              padding: '8px 0',
-              fontSize: '15px'
-            }}
-            onMouseEnter={(e) => e.target.style.color = '#0F172A'}
-            onMouseLeave={(e) => e.target.style.color = '#64748B'}>
-              Dashboard
-            </Link>
+
             <Link to="/vote" style={{
               color: '#64748B',
               fontWeight: '600',
@@ -97,18 +86,6 @@ const Navbar = () => {
             onMouseEnter={(e) => e.target.style.color = '#0F172A'}
             onMouseLeave={(e) => e.target.style.color = '#64748B'}>
               Voters
-            </Link>
-            <Link to="/results" style={{
-              color: '#64748B',
-              fontWeight: '600',
-              textDecoration: 'none',
-              transition: 'color 0.2s ease',
-              padding: '8px 0',
-              fontSize: '15px'
-            }}
-            onMouseEnter={(e) => e.target.style.color = '#0F172A'}
-            onMouseLeave={(e) => e.target.style.color = '#64748B'}>
-              Results
             </Link>
           </div>
           <div style={{

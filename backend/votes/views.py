@@ -3,7 +3,7 @@ Views for Vote model.
 """
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated, AllowAny, IsAdminUser
 from rest_framework.response import Response
 from django.db import IntegrityError
 from django.db.models import Count, Q
@@ -75,10 +75,11 @@ def has_voted(request):
 
 
 @api_view(['GET'])
-@permission_classes([IsAuthenticated])
+@permission_classes([IsAdminUser])
 def results(request):
     """
-    Get election results with vote counts for each candidate.
+    ADMIN-ONLY: Get election results with vote counts for each candidate.
+    Results are hidden from regular voters following real-world voting standards.
     """
     candidates = Candidate.objects.annotate(
         vote_count=Count('votes')

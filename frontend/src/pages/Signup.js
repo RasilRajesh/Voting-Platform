@@ -34,7 +34,7 @@ const Signup = () => {
       const response = await axios.post('http://127.0.0.1:8000/auth/signup/', formData);
       login(response.data.user, response.data.tokens);
       toast.success('Account created successfully!');
-      navigate('/dashboard');
+      navigate('/vote');
     } catch (error) {
       const errorData = error.response?.data;
       if (errorData) {
@@ -55,7 +55,7 @@ const Signup = () => {
       });
       login(response.data.user, response.data.tokens);
       toast.success('Google signup successful!');
-      navigate('/dashboard');
+      navigate('/vote');
     } catch (error) {
       toast.error('Google signup failed. Please try again.');
     }

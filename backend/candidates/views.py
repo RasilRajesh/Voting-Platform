@@ -15,18 +15,13 @@ from votes.models import Vote
 @permission_classes([AllowAny])
 def candidate_list(request):
     """
-    Get list of all candidates with vote counts.
+    Get list of all candidates WITHOUT vote counts.
+    Vote counts are hidden from voters for election integrity.
     Should return exactly 2 candidates (one per team).
     """
-    candidates = Candidate.objects.annotate(
-        vote_count=Count('votes')
-    ).all()
+    candidates = Candidate.objects.all()
     serializer = CandidateSerializer(candidates, many=True, context={'request': request})
     
-    # Add vote count to response
-    data = serializer.data
-    for i, candidate in enumerate(candidates):
-        data[i]['vote_count'] = candidate.vote_count
-    
-    return Response(data, status=status.HTTP_200_OK)
+    # DO NOT send vote counts to voters (real-world voting standard)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 

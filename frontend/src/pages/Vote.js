@@ -64,7 +64,8 @@ const Vote = () => {
       );
       setVoteSuccess(true);
       setHasVoted(true);
-      setTimeout(() => navigate('/results'), 2500);
+      // Do NOT redirect to results - follow real-world voting standards
+      // Vote is recorded anonymously, results hidden from voters
     } catch (error) {
       if (error.response?.status === 400) {
         setHasVoted(true);
@@ -183,20 +184,43 @@ const Vote = () => {
             <div style={{
               maxWidth: '600px',
               margin: '0 auto 32px',
-              padding: '16px 20px',
-              background: '#D1FAE5',
-              border: '1px solid #A7F3D0',
+              padding: '20px 24px',
+              background: 'linear-gradient(135deg, #D1FAE5 0%, #A7F3D0 100%)',
+              border: '2px solid #10B981',
               borderRadius: '12px',
               display: 'flex',
+              flexDirection: 'column',
               alignItems: 'center',
-              gap: '10px'
+              gap: '12px',
+              boxShadow: '0 4px 20px rgba(16, 185, 129, 0.2)'
             }}>
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-                <circle cx="10" cy="10" r="9" stroke="#065F46" strokeWidth="2"/>
-                <path d="M6 10L9 13L14 7" stroke="#065F46" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-              </svg>
-              <span style={{ color: '#065F46', fontSize: '14px', fontWeight: '600' }}>
-                ✓ Vote submitted successfully! Redirecting to results...
+              <div style={{
+                background: '#10B981',
+                borderRadius: '50%',
+                padding: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}>
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                  <path d="M10 16L14 20L22 12" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </div>
+              <span style={{ 
+                color: '#065F46', 
+                fontSize: '18px', 
+                fontWeight: '700',
+                textAlign: 'center'
+              }}>
+                ✓ Your vote has been recorded successfully
+              </span>
+              <span style={{ 
+                color: '#047857', 
+                fontSize: '14px',
+                textAlign: 'center',
+                marginTop: '4px'
+              }}>
+                Thank you for participating in this election
               </span>
             </div>
           )}

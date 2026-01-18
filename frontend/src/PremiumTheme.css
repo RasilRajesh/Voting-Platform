@@ -580,10 +580,14 @@
 
 /* PREMIUM CANDIDATE CARDS */
 .candidates-grid-premium {
-  display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
   gap: 32px;
   margin: 40px 0;
+  max-width: 800px;
+  margin-left: auto;
+  margin-right: auto;
 }
 
 .candidate-card-premium {
@@ -603,7 +607,7 @@
   left: 0;
   right: 0;
   height: 5px;
-  background: linear-gradient(90deg, #3B82F6, #1D4ED8);
+  background: #14B8A6;
   transform: scaleX(0);
   transition: transform 0.3s ease;
 }
@@ -629,14 +633,14 @@
   border-radius: 50%;
   object-fit: cover;
   margin: 0 auto 20px;
-  border: 5px solid #F0F9FF;
-  box-shadow: 0 8px 24px rgba(59, 130, 246, 0.15);
+  border: 5px solid #CCFBF1;
+  box-shadow: 0 8px 24px rgba(20, 184, 166, 0.15);
   transition: all 0.3s ease;
 }
 
 .candidate-card-premium:hover .candidate-image-premium {
   transform: scale(1.05);
-  box-shadow: 0 12px 32px rgba(59, 130, 246, 0.25);
+  box-shadow: 0 12px 32px rgba(20, 184, 166, 0.25);
 }
 
 .candidate-name-premium {

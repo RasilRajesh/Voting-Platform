@@ -236,63 +236,118 @@ const Admin = () => {
           {activeTab === 'overview' && statistics && (
             <div>
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px', marginBottom: '30px' }}>
-                <div style={{ padding: '20px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #dee2e6' }}>
-                  <h3 style={{ margin: '0 0 10px 0', color: '#666', fontSize: '14px' }}>Total Users</h3>
-                  <p style={{ margin: 0, fontSize: '32px', fontWeight: 'bold', color: '#007bff' }}>{users.length}</p>
+                <div style={{ 
+                  padding: '25px', 
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+                  borderRadius: '16px', 
+                  boxShadow: '0 8px 24px rgba(102, 126, 234, 0.3)',
+                  border: 'none'
+                }}>
+                  <h3 style={{ margin: '0 0 10px 0', color: 'rgba(255,255,255,0.9)', fontSize: '14px', fontWeight: '600' }}>Total Users</h3>
+                  <p style={{ margin: 0, fontSize: '36px', fontWeight: 'bold', color: '#fff' }}>{users.length}</p>
                 </div>
-                <div style={{ padding: '20px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #dee2e6' }}>
-                  <h3 style={{ margin: '0 0 10px 0', color: '#666', fontSize: '14px' }}>Total Votes</h3>
-                  <p style={{ margin: 0, fontSize: '32px', fontWeight: 'bold', color: '#28a745' }}>{statistics.total_votes}</p>
+                <div style={{ 
+                  padding: '25px', 
+                  background: 'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)', 
+                  borderRadius: '16px', 
+                  boxShadow: '0 8px 24px rgba(245, 87, 108, 0.3)',
+                  border: 'none'
+                }}>
+                  <h3 style={{ margin: '0 0 10px 0', color: 'rgba(255,255,255,0.9)', fontSize: '14px', fontWeight: '600' }}>Total Votes</h3>
+                  <p style={{ margin: 0, fontSize: '36px', fontWeight: 'bold', color: '#fff' }}>{statistics.total_votes}</p>
                 </div>
-                <div style={{ padding: '20px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #dee2e6' }}>
-                  <h3 style={{ margin: '0 0 10px 0', color: '#666', fontSize: '14px' }}>Total Candidates</h3>
-                  <p style={{ margin: 0, fontSize: '32px', fontWeight: 'bold', color: '#6f42c1' }}>{candidates.length}</p>
+                <div style={{ 
+                  padding: '25px', 
+                  background: 'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)', 
+                  borderRadius: '16px', 
+                  boxShadow: '0 8px 24px rgba(79, 172, 254, 0.3)',
+                  border: 'none'
+                }}>
+                  <h3 style={{ margin: '0 0 10px 0', color: 'rgba(255,255,255,0.9)', fontSize: '14px', fontWeight: '600' }}>Total Candidates</h3>
+                  <p style={{ margin: 0, fontSize: '36px', fontWeight: 'bold', color: '#fff' }}>{candidates.length}</p>
                 </div>
-                <div style={{ padding: '20px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #dee2e6' }}>
-                  <h3 style={{ margin: '0 0 10px 0', color: '#666', fontSize: '14px' }}>Voter Turnout</h3>
-                  <p style={{ margin: 0, fontSize: '32px', fontWeight: 'bold', color: '#fd7e14' }}>
+                <div style={{ 
+                  padding: '25px', 
+                  background: 'linear-gradient(135deg, #fa709a 0%, #fee140 100%)', 
+                  borderRadius: '16px', 
+                  boxShadow: '0 8px 24px rgba(250, 112, 154, 0.3)',
+                  border: 'none'
+                }}>
+                  <h3 style={{ margin: '0 0 10px 0', color: 'rgba(255,255,255,0.9)', fontSize: '14px', fontWeight: '600' }}>Voter Turnout</h3>
+                  <p style={{ margin: 0, fontSize: '36px', fontWeight: 'bold', color: '#fff' }}>
                     {users.length > 0 ? Math.round((statistics.total_votes / users.length) * 100) : 0}%
                   </p>
                 </div>
               </div>
 
               <div style={{ marginTop: '30px' }}>
-                <h3>Top Candidates</h3>
-                {statistics.candidates_by_votes.slice(0, 5).map((candidate, index) => (
+                <h3 style={{ marginBottom: '20px', color: '#1a1a1a' }}>Top Candidates</h3>
+                {statistics.candidates_by_votes.slice(0, 5).map((candidate, index) => {
+                  const gradients = [
+                    'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+                    'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)',
+                    'linear-gradient(135deg, #43e97b 0%, #38f9d7 100%)',
+                    'linear-gradient(135deg, #fa709a 0%, #fee140 100%)',
+                    'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                  ];
+                  return (
                   <div key={candidate.id} style={{ 
                     display: 'flex', 
                     alignItems: 'center', 
                     justifyContent: 'space-between',
-                    padding: '15px',
-                    marginBottom: '10px',
-                    background: '#f8f9fa',
-                    borderRadius: '8px',
-                    border: '1px solid #dee2e6'
+                    padding: '20px',
+                    marginBottom: '12px',
+                    background: gradients[index],
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 15px rgba(0, 0, 0, 0.1)',
+                    border: 'none',
+                    transition: 'transform 0.2s'
                   }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
                       <span style={{ 
-                        fontSize: '20px', 
+                        fontSize: '24px', 
                         fontWeight: 'bold', 
-                        color: index === 0 ? '#ffc107' : '#666',
-                        width: '30px'
+                        color: '#fff',
+                        width: '35px',
+                        height: '35px',
+                        background: 'rgba(255, 255, 255, 0.3)',
+                        borderRadius: '50%',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center'
                       }}>
-                        #{index + 1}
+                        {index + 1}
                       </span>
                       <div>
-                        <div style={{ fontWeight: '600' }}>{candidate.name}</div>
-                        <div style={{ fontSize: '12px', color: '#666' }}>Team {candidate.team_id}</div>
+                        <div style={{ fontWeight: '700', color: '#fff', fontSize: '16px' }}>{candidate.name}</div>
+                        <div style={{ fontSize: '13px', color: 'rgba(255,255,255,0.9)' }}>Team {candidate.team_id}</div>
                       </div>
                     </div>
-                    <div style={{ fontWeight: 'bold', fontSize: '18px', color: '#007bff' }}>
-                      {candidate.vote_count} votes
+                    <div style={{ 
+                      fontWeight: 'bold', 
+                      fontSize: '22px', 
+                      color: '#fff',
+                      background: 'rgba(255, 255, 255, 0.3)',
+                      padding: '8px 16px',
+                      borderRadius: '20px'
+                    }}>
+                      {candidate.vote_count}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
 
-              <div style={{ marginTop: '30px', padding: '20px', background: '#fff3cd', borderRadius: '8px', border: '1px solid #ffc107' }}>
-                <h3 style={{ margin: '0 0 10px 0', color: '#856404' }}>Danger Zone</h3>
-                <p style={{ margin: '0 0 15px 0', fontSize: '14px', color: '#856404' }}>
+              <div style={{ 
+                marginTop: '30px', 
+                padding: '25px', 
+                background: 'linear-gradient(135deg, #fff5f5 0%, #ffe8e8 100%)', 
+                borderRadius: '16px', 
+                border: '2px solid #ff6b6b',
+                boxShadow: '0 4px 15px rgba(255, 107, 107, 0.2)'
+              }}>
+                <h3 style={{ margin: '0 0 10px 0', color: '#c92a2a', fontWeight: '700' }}>⚠️ Danger Zone</h3>
+                <p style={{ margin: '0 0 15px 0', fontSize: '14px', color: '#e03131' }}>
                   These actions are irreversible. Please be certain before proceeding.
                 </p>
                 <button

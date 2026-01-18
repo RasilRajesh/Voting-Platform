@@ -112,16 +112,16 @@ const Vote = () => {
               alignItems: 'center',
               gap: '8px',
               padding: '8px 16px',
-              background: '#EFF6FF',
+              background: '#F1F5F9',
               borderRadius: '100px',
               marginBottom: '16px',
-              border: '1px solid #DBEAFE'
+              border: '1px solid #E2E8F0'
             }}>
               <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <circle cx="8" cy="8" r="3" fill="#3B82F6"/>
-                <circle cx="8" cy="8" r="7" stroke="#3B82F6" strokeWidth="1" opacity="0.3"/>
+                <circle cx="8" cy="8" r="3" fill="#64748B"/>
+                <circle cx="8" cy="8" r="7" stroke="#64748B" strokeWidth="1" opacity="0.3"/>
               </svg>
-              <span style={{ color: '#1E40AF', fontWeight: '600', fontSize: '14px' }}>Cast Your Vote</span>
+              <span style={{ color: '#475569', fontWeight: '600', fontSize: '14px' }}>Cast Your Vote</span>
             </div>
             <h1 style={{
               fontSize: '48px',
@@ -234,8 +234,9 @@ const Vote = () => {
                 style={{
                   cursor: hasVoted ? 'not-allowed' : 'pointer',
                   opacity: hasVoted ? 0.6 : 1,
-                  border: selectedCandidate === candidate.id ? '2px solid #3B82F6' : '1px solid #E2E8F0',
-                  background: selectedCandidate === candidate.id ? '#EFF6FF' : 'white'
+                  border: selectedCandidate === candidate.id ? '2px solid #2563EB' : '1px solid #E2E8F0',
+                  background: 'white',
+                  width: '360px'
                 }}
                 onClick={() => !hasVoted && setSelectedCandidate(candidate.id)}
               >
@@ -244,10 +245,10 @@ const Vote = () => {
                     position: 'absolute',
                     top: '16px',
                     right: '16px',
-                    background: '#3B82F6',
+                    background: '#2563EB',
                     borderRadius: '50%',
                     padding: '4px',
-                    boxShadow: '0 4px 12px rgba(59, 130, 246, 0.3)'
+                    boxShadow: '0 4px 12px rgba(37, 99, 235, 0.2)'
                   }}>
                     <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                       <path d="M5 10L8.5 13.5L15 7" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
@@ -267,7 +268,7 @@ const Vote = () => {
                       width: '140px',
                       height: '140px',
                       borderRadius: '50%',
-                      background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                      background: '#2563EB',
                       margin: '0 auto 20px',
                       display: 'flex',
                       alignItems: 'center',
@@ -275,7 +276,7 @@ const Vote = () => {
                       color: 'white',
                       fontSize: '48px',
                       fontWeight: '700',
-                      border: '5px solid #F0F9FF'
+                      border: '5px solid #F1F5F9'
                     }}>
                       {candidate.name?.charAt(0).toUpperCase()}
                     </div>
@@ -308,7 +309,7 @@ const Vote = () => {
                       padding: '14px',
                       marginTop: '16px',
                       background: selectedCandidate === candidate.id 
-                        ? 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)'
+                        ? '#2563EB'
                         : 'white',
                       color: selectedCandidate === candidate.id ? 'white' : '#64748B',
                       border: selectedCandidate === candidate.id ? 'none' : '2px solid #E2E8F0',
@@ -339,11 +340,6 @@ const Vote = () => {
                       }
                     }}
                   >
-                    {selectedCandidate === candidate.id && (
-                      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                        <path d="M3 8L6.5 11.5L13 5" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                      </svg>
-                    )}
                     <span>{selectedCandidate === candidate.id ? 'Selected' : 'Select Candidate'}</span>
                   </button>
                 )}
@@ -364,7 +360,7 @@ const Vote = () => {
                   padding: '18px 48px',
                   background: !selectedCandidate || submitting 
                     ? '#E2E8F0'
-                    : 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                    : '#2563EB',
                   color: !selectedCandidate || submitting ? '#94A3B8' : 'white',
                   border: 'none',
                   borderRadius: '14px',
@@ -377,18 +373,18 @@ const Vote = () => {
                   gap: '12px',
                   boxShadow: !selectedCandidate || submitting 
                     ? 'none'
-                    : '0 8px 20px rgba(59, 130, 246, 0.3)'
+                    : '0 8px 20px rgba(37, 99, 235, 0.3)'
                 }}
                 onMouseEnter={(e) => {
                   if (selectedCandidate && !submitting) {
                     e.target.style.transform = 'translateY(-2px)';
-                    e.target.style.boxShadow = '0 12px 28px rgba(59, 130, 246, 0.4)';
+                    e.target.style.boxShadow = '0 12px 28px rgba(37, 99, 235, 0.4)';
                   }
                 }}
                 onMouseLeave={(e) => {
                   e.target.style.transform = 'translateY(0)';
                   e.target.style.boxShadow = selectedCandidate && !submitting
-                    ? '0 8px 20px rgba(59, 130, 246, 0.3)'
+                    ? '0 8px 20px rgba(37, 99, 235, 0.3)'
                     : 'none';
                 }}
               >
@@ -476,7 +472,7 @@ const Vote = () => {
                 onClick={() => navigate('/dashboard')}
                 style={{
                   padding: '14px 32px',
-                  background: 'linear-gradient(135deg, #3B82F6 0%, #1D4ED8 100%)',
+                  background: '#2563EB',
                   color: 'white',
                   border: 'none',
                   borderRadius: '12px',
@@ -484,15 +480,15 @@ const Vote = () => {
                   fontWeight: '600',
                   cursor: 'pointer',
                   transition: 'all 0.2s ease',
-                  boxShadow: '0 4px 14px rgba(59, 130, 246, 0.3)'
+                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
                 }}
                 onMouseEnter={(e) => {
                   e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 8px 20px rgba(59, 130, 246, 0.4)';
+                  e.target.style.boxShadow = '0 8px 20px rgba(37, 99, 235, 0.4)';
                 }}
                 onMouseLeave={(e) => {
                   e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 4px 14px rgba(59, 130, 246, 0.3)';
+                  e.target.style.boxShadow = '0 4px 14px rgba(37, 99, 235, 0.3)';
                 }}
               >
                 Go to Dashboard

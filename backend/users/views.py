@@ -292,9 +292,10 @@ def linkedin_oauth(request, backend):
 def google_oauth_simple(request):
     """
     Google OAuth endpoint.
-    Frontend should send the credential (ID token) from Google OAuth flow.
+    Frontend can send either credential (ID token) or access_token from Google OAuth flow.
     """
     import logging
+    import requests as http_requests
     from google.oauth2 import id_token
     from google.auth.transport import requests as google_requests
     from django.conf import settings
@@ -302,26 +303,48 @@ def google_oauth_simple(request):
     logger = logging.getLogger(__name__)
     
     credential = request.data.get('credential')
-    if not credential:
+    access_token = request.data.get('access_token')
+    
+    if not credential and not access_token:
         return Response(
-            {'error': 'credential is required'},
+            {'error': 'credential or access_token is required'},
             status=status.HTTP_400_BAD_REQUEST
         )
     
     try:
         logger.info(f"Google OAuth attempt - Client ID configured: {bool(settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY)}")
         
-        # Verify the token with clock skew tolerance
-        idinfo = id_token.verify_oauth2_token(
-            credential, 
-            google_requests.Request(), 
-            settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY,
-            clock_skew_in_seconds=300  # Allow 5 minutes tolerance
-        )
-        
-        # Get user info from the token
-        email = idinfo.get('email')
-        name = idinfo.get('name', '')
+        # Handle access_token (from useGoogleLogin hook)
+        if access_token:
+            logger.info("Using access_token to fetch user info")
+            userinfo_response = http_requests.get(
+                'https://www.googleapis.com/oauth2/v3/userinfo',
+                headers={'Authorization': f'Bearer {access_token}'}
+            )
+            
+            if userinfo_response.status_code != 200:
+                return Response(
+                    {'error': 'Failed to fetch user info from Google'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            idinfo = userinfo_response.json()
+            email = idinfo.get('email')
+            name = idinfo.get('name', '')
+        else:
+            # Handle credential (ID token from GoogleLogin component)
+            logger.info("Using credential ID token")
+            # Verify the token with clock skew tolerance
+            idinfo = id_token.verify_oauth2_token(
+                credential, 
+                google_requests.Request(), 
+                settings.SOCIAL_AUTH_GOOGLE_OAUTH2_KEY,
+                clock_skew_in_seconds=300  # Allow 5 minutes tolerance
+            )
+            
+            # Get user info from the token
+            email = idinfo.get('email')
+            name = idinfo.get('name', '')
         
         logger.info(f"Google OAuth successful - Email: {email}, Name: {name}")
         
@@ -371,76 +394,76 @@ def google_oauth_simple(request):
 @permission_classes([AllowAny])
 def linkedin_oauth_simple(request):
     """
-    Simplified LinkedIn OAuth endpoint.
-    Frontend should send the access_token from LinkedIn OAuth flow.
-    Note: This uses LinkedIn OpenID Connect userinfo endpoint.
+    LinkedIn OAuth endpoint.
+    Frontend can send either:
+    - 'code' + 'redirect_uri' (authorization code flow)
+    - 'access_token' (implicit flow)
     """
+    import requests
+    from django.conf import settings
+    import logging
+    
+    logger = logging.getLogger(__name__)
+    
+    code = request.data.get('code')
+    redirect_uri = request.data.get('redirect_uri')
     access_token = request.data.get('access_token')
+    
+    logger.info(f"LinkedIn OAuth - code: {code[:10] if code else None}, redirect_uri: {redirect_uri}")
+    
+    # If code is provided, exchange it for access token
+    if code and redirect_uri:
+        try:
+            token_url = 'https://www.linkedin.com/oauth/v2/accessToken'
+            token_data = {
+                'grant_type': 'authorization_code',
+                'code': code,
+                'redirect_uri': redirect_uri,
+                'client_id': settings.SOCIAL_AUTH_LINKEDIN_OAUTH2_KEY,
+                'client_secret': settings.SOCIAL_AUTH_LINKEDIN_OAUTH2_SECRET,
+            }
+            
+            logger.info(f"Exchanging code for token with client_id: {settings.SOCIAL_AUTH_LINKEDIN_OAUTH2_KEY}")
+            token_response = requests.post(token_url, data=token_data)
+            
+            logger.info(f"Token response status: {token_response.status_code}")
+            logger.info(f"Token response: {token_response.text}")
+            
+            if token_response.status_code != 200:
+                error_msg = f'Failed to exchange code for token. Status: {token_response.status_code}, Response: {token_response.text}'
+                logger.error(error_msg)
+                return Response(
+                    {'error': error_msg},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            
+            access_token = token_response.json().get('access_token')
+            logger.info(f"Got access token: {access_token[:10] if access_token else None}...")
+        except Exception as e:
+            error_msg = f'Token exchange failed: {str(e)}'
+            logger.error(error_msg)
+            return Response(
+                {'error': error_msg},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+    
     if not access_token:
+        error_msg = 'Either code+redirect_uri or access_token is required'
+        logger.error(error_msg)
         return Response(
-            {'error': 'access_token is required'},
+            {'error': error_msg},
             status=status.HTTP_400_BAD_REQUEST
         )
     
     try:
-        import requests
-        
         # Get user profile from LinkedIn OpenID Connect userinfo endpoint
-        # This requires OpenID Connect product to be enabled in LinkedIn app
         profile_url = 'https://api.linkedin.com/v2/userinfo'
         headers = {'Authorization': f'Bearer {access_token}'}
         response = requests.get(profile_url, headers=headers)
         
         if response.status_code != 200:
-            # Fallback: try to get basic profile info
-            try:
-                # Alternative: use legacy profile endpoint (requires different scopes)
-                profile_url_legacy = 'https://api.linkedin.com/v2/me'
-                response_legacy = requests.get(profile_url_legacy, headers=headers)
-                if response_legacy.status_code == 200:
-                    user_data = response_legacy.json()
-                    # Extract name from firstName and lastName
-                    first_name = user_data.get('firstName', {}).get('localized', {}).get('en_US', '')
-                    last_name = user_data.get('lastName', {}).get('localized', {}).get('en_US', '')
-                    name = f"{first_name} {last_name}".strip()
-                    linkedin_id = user_data.get('id', '')
-                    
-                    # For email, we'd need emailAddress endpoint with proper scope
-                    # For now, use a placeholder or require email in request
-                    email = request.data.get('email')
-                    if not email:
-                        return Response(
-                            {'error': 'Email is required. Please provide email in request.'},
-                            status=status.HTTP_400_BAD_REQUEST
-                        )
-                    
-                    # Get or create user
-                    user, created = User.objects.get_or_create(
-                        email=email,
-                        defaults={
-                            'name': name or email.split('@')[0],
-                            'auth_provider': 'linkedin',
-                            'linkedin_url': f"https://www.linkedin.com/in/{linkedin_id}/" if linkedin_id else '',
-                        }
-                    )
-                    
-                    if not created:
-                        user.name = name or user.name
-                        user.auth_provider = 'linkedin'
-                        if linkedin_id and not user.linkedin_url:
-                            user.linkedin_url = f"https://www.linkedin.com/in/{linkedin_id}/"
-                        user.save()
-                    
-                    tokens = get_tokens_for_user(user)
-                    return Response({
-                        'user': UserSerializer(user).data,
-                        'tokens': tokens
-                    }, status=status.HTTP_200_OK)
-            except:
-                pass
-            
             return Response(
-                {'error': f'Invalid access token. Status: {response.status_code}'},
+                {'error': f'Invalid access token. Status: {response.status_code}, Response: {response.text}'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         

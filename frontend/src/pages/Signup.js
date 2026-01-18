@@ -1,6 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { GoogleLogin } from '@react-oauth/google';
+import { useGoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
 import { useAuth } from '../context/AuthContext';
 import { toast } from 'react-toastify';
@@ -15,6 +15,33 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+
+  // Handle LinkedIn OAuth callback
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+
+    if (code) {
+      handleLinkedInCallback(code);
+    }
+  }, []);
+
+  const handleLinkedInCallback = async (code) => {
+    setLoading(true);
+    try {
+      const response = await axios.post('http://127.0.0.1:8000/auth/linkedin/', {
+        code: code,
+        redirect_uri: 'http://localhost:3000/signup'
+      });
+      login(response.data.user, response.data.tokens);
+      toast.success('LinkedIn signup successful!');
+      navigate('/vote');
+    } catch (error) {
+      toast.error('LinkedIn signup failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -48,25 +75,37 @@ const Signup = () => {
     }
   };
 
-  const handleGoogleSuccess = async (credentialResponse) => {
-    try {
-      const response = await axios.post('http://127.0.0.1:8000/auth/google/', {
-        credential: credentialResponse.credential,
-      });
-      login(response.data.user, response.data.tokens);
-      toast.success('Google signup successful!');
-      navigate('/vote');
-    } catch (error) {
-      toast.error('Google signup failed. Please try again.');
-    }
-  };
-
-  const handleGoogleError = () => {
-    toast.error('Google signup was cancelled or failed.');
-  };
+  const googleLogin = useGoogleLogin({
+    onSuccess: async (tokenResponse) => {
+      try {
+        // Exchange access token for user credential
+        const response = await axios.post('http://127.0.0.1:8000/auth/google/', {
+          access_token: tokenResponse.access_token,
+        });
+        login(response.data.user, response.data.tokens);
+        toast.success('Google signup successful!');
+        navigate('/vote');
+      } catch (error) {
+        toast.error('Google signup failed. Please try again.');
+      }
+    },
+    onError: () => {
+      toast.error('Google signup was cancelled or failed.');
+    },
+    prompt: 'select_account',
+    flow: 'implicit',
+  });
 
   const handleLinkedInLogin = () => {
-    toast.info('LinkedIn signup coming soon!');
+    // LinkedIn OAuth URL with your client ID
+    const LINKEDIN_CLIENT_ID = process.env.REACT_APP_LINKEDIN_CLIENT_ID || 'YOUR_LINKEDIN_CLIENT_ID';
+    const REDIRECT_URI = encodeURIComponent('http://localhost:3000/signup');
+    const STATE = Math.random().toString(36).substring(7);
+    const SCOPE = encodeURIComponent('openid profile email');
+    
+    const linkedInAuthUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${LINKEDIN_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&state=${STATE}&scope=${SCOPE}`;
+    
+    window.location.href = linkedInAuthUrl;
   };
 
   return (
@@ -85,34 +124,6 @@ const Signup = () => {
         <div className="auth-header">
           <h1 className="auth-title">Create Account</h1>
           <p className="auth-subtitle">Join us to start voting securely</p>
-        </div>
-
-        {/* Social Login Buttons */}
-        <div className="social-login-section">
-          <div className="google-login-wrapper">
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={handleGoogleError}
-              theme="outline"
-              size="large"
-              text="signup_with"
-              width="100%"
-            />
-          </div>
-          
-          <button className="linkedin-login-btn" type="button" onClick={handleLinkedInLogin}>
-            <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
-              <path d="M18.5 0h-17C0.675 0 0 0.675 0 1.5v17C0 19.325 0.675 20 1.5 20h17c0.825 0 1.5-0.675 1.5-1.5v-17C20 0.675 19.325 0 18.5 0zM6 17H3V8h3V17zM4.5 6.5C3.675 6.5 3 5.825 3 5s0.675-1.5 1.5-1.5S6 4.175 6 5 5.325 6.5 4.5 6.5zM17 17h-3v-4.5c0-1.125-0.375-1.875-1.313-1.875-0.713 0-1.137 0.488-1.325 0.95-0.063 0.175-0.087 0.4-0.087 0.65V17h-3s0.038-7.5 0-8.25h3v1.175c0.4-0.612 1.113-1.487 2.7-1.487 1.975 0 3.45 1.287 3.45 4.05V17h-0.025z" fill="#0A66C2"/>
-            </svg>
-            <span>Sign up with LinkedIn</span>
-          </button>
-        </div>
-
-        {/* Divider */}
-        <div className="auth-divider">
-          <span className="divider-line"></span>
-          <span className="divider-text">or sign up with email</span>
-          <span className="divider-line"></span>
         </div>
 
         {/* Signup Form */}
@@ -213,6 +224,81 @@ const Signup = () => {
             )}
           </button>
         </form>
+
+        {/* Social Login Buttons */}
+        <div style={{ 
+          display: 'flex', 
+          flexDirection: 'column',
+          gap: '12px', 
+          marginTop: '24px',
+          paddingTop: '24px',
+          borderTop: '1px solid #e5e7eb'
+        }}>
+          <button onClick={googleLogin} style={{
+            width: '100%',
+            padding: '12px 16px',
+            borderRadius: '10px',
+            border: '2px solid #e5e7eb',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            background: 'white',
+            fontSize: '15px',
+            fontWeight: '600',
+            color: '#333',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = '#4285F4';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(66, 133, 244, 0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = '#e5e7eb';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.05)';
+          }}>
+            <svg width="20" height="20" viewBox="0 0 24 24">
+              <path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/>
+              <path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/>
+              <path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"/>
+              <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
+            </svg>
+            Continue with Google
+          </button>
+          
+          <button onClick={handleLinkedInLogin} style={{
+            width: '100%',
+            padding: '12px 16px',
+            borderRadius: '10px',
+            border: '2px solid #e5e7eb',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '10px',
+            cursor: 'pointer',
+            transition: 'all 0.3s ease',
+            background: 'white',
+            fontSize: '15px',
+            fontWeight: '600',
+            color: '#333',
+            boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)'
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = '#0A66C2';
+            e.currentTarget.style.boxShadow = '0 4px 12px rgba(10, 102, 194, 0.2)';
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = '#e5e7eb';
+            e.currentTarget.style.boxShadow = '0 2px 8px rgba(0, 0, 0, 0.05)';
+          }}>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="#0A66C2">
+              <path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/>
+            </svg>
+            Continue with LinkedIn
+          </button>
+        </div>
 
         {/* Sign In Link */}
         <div className="auth-footer">

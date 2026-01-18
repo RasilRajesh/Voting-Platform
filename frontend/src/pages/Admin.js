@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
+import CandidateModal from '../components/CandidateModal';
 import { useAuth } from '../context/AuthContext';
 
 const Admin = () => {
@@ -12,6 +13,8 @@ const Admin = () => {
   const [votes, setVotes] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingCandidate, setEditingCandidate] = useState(null);
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -59,7 +62,7 @@ const Admin = () => {
     
     try {
       const token = localStorage.getItem('access_token');
-      await axios.delete(`http://localhost:8000/api/candidates/${id}/`, {
+      await axios.delete(`http://localhost:8000/api/candidates/${id}/delete/`, {
         headers: { Authorization: `Bearer ${token}` }
       });
       fetchAllData();
@@ -68,6 +71,53 @@ const Admin = () => {
       alert('Failed to delete candidate');
       console.error('Error deleting candidate:', err);
     }
+  };
+
+  const handleSaveCandidate = async (formData) => {
+    try {
+      const token = localStorage.getItem('access_token');
+      const headers = { Authorization: `Bearer ${token}` };
+
+      if (editingCandidate) {
+        // Update existing candidate
+        await axios.put(
+          `http://localhost:8000/api/candidates/${editingCandidate.id}/`,
+          formData,
+          { headers }
+        );
+        alert('Candidate updated successfully');
+      } else {
+        // Create new candidate
+        await axios.post(
+          'http://localhost:8000/api/candidates/create/',
+          formData,
+          { headers }
+        );
+        alert('Candidate created successfully');
+      }
+      
+      fetchAllData();
+      setIsModalOpen(false);
+      setEditingCandidate(null);
+    } catch (err) {
+      console.error('Error saving candidate:', err);
+      throw err;
+    }
+  };
+
+  const handleAddCandidate = () => {
+    setEditingCandidate(null);
+    setIsModalOpen(true);
+  };
+
+  const handleEditCandidate = (candidate) => {
+    setEditingCandidate(candidate);
+    setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    setEditingCandidate(null);
   };
 
   const handleResetVotes = async () => {
@@ -309,7 +359,7 @@ const Admin = () => {
             <div>
               <div style={{ marginBottom: '20px' }}>
                 <button
-                  onClick={() => navigate('/admin/add-candidate')}
+                  onClick={handleAddCandidate}
                   className="btn btn-primary"
                 >
                   + Add New Candidate
@@ -339,13 +389,22 @@ const Admin = () => {
                           {candidate.description.substring(0, 100)}...
                         </p>
                       )}
-                      <button
-                        onClick={() => handleDeleteCandidate(candidate.id)}
-                        className="btn"
-                        style={{ background: '#dc3545', color: 'white', width: '100%' }}
-                      >
-                        Delete
-                      </button>
+                      <div style={{ display: 'flex', gap: '10px' }}>
+                        <button
+                          onClick={() => handleEditCandidate(candidate)}
+                          className="btn"
+                          style={{ background: '#007bff', color: 'white', flex: 1 }}
+                        >
+                          Edit
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCandidate(candidate.id)}
+                          className="btn"
+                          style={{ background: '#dc3545', color: 'white', flex: 1 }}
+                        >
+                          Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -384,6 +443,14 @@ const Admin = () => {
           )}
         </div>
       </div>
+
+      {/* Candidate Modal */}
+      <CandidateModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        onSave={handleSaveCandidate}
+        candidate={editingCandidate}
+      />
     </>
   );
 };

@@ -8,6 +8,8 @@ from rest_framework.response import Response
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from django.utils import timezone
+from django.core.mail import send_mail
+from django.conf import settings
 from social_django.utils import psa
 from .serializers import (
     UserSerializer,
@@ -62,13 +64,150 @@ def login(request):
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def forgot_password(request):
-    """Forgot password endpoint (placeholder - implement email sending)."""
+    """Forgot password endpoint - sends reset email with token."""
     serializer = ForgotPasswordSerializer(data=request.data)
     if serializer.is_valid():
-        # TODO: Send password reset email
-        return Response({
-            'message': 'Password reset email sent (not implemented in this demo)'
-        }, status=status.HTTP_200_OK)
+        email = serializer.validated_data['email']
+        try:
+            user = User.objects.get(email=email)
+            
+            # Only allow password reset for local auth users
+            if user.auth_provider != 'local':
+                return Response({
+                    'error': f'This account uses {user.auth_provider} authentication. Please use {user.auth_provider} to sign in.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Generate reset token
+            token = user.generate_reset_token()
+            
+            # Build reset URL
+            frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')
+            reset_url = f"{frontend_url}/reset-password?token={token}"
+            
+            # Send email
+            subject = 'Password Reset Request - Voting Platform'
+            message = f"""Hello {user.name},
+
+You requested to reset your password for the Voting Platform.
+
+Click the link below to reset your password:
+{reset_url}
+
+This link will expire in 1 hour.
+
+If you didn't request this, please ignore this email.
+
+Best regards,
+Voting Platform Team
+"""
+            
+            try:
+                send_mail(
+                    subject,
+                    message,
+                    settings.EMAIL_HOST_USER,
+                    [email],
+                    fail_silently=False,
+                )
+                return Response({
+                    'message': 'Password reset email sent successfully! Please check your inbox.'
+                }, status=status.HTTP_200_OK)
+            except Exception as e:
+                # For development, return the token in response if email fails
+                if settings.DEBUG:
+                    return Response({
+                        'message': 'Email sending failed (dev mode). Use this token:',
+                        'reset_url': reset_url,
+                        'token': token
+                    }, status=status.HTTP_200_OK)
+                return Response({
+                    'error': 'Failed to send email. Please try again later.'
+                }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+                
+        except User.DoesNotExist:
+            # Don't reveal that user doesn't exist
+            return Response({
+                'message': 'If an account exists with this email, a password reset link has been sent.'
+            }, status=status.HTTP_200_OK)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def reset_password(request):
+    """Reset password with token."""
+    serializer = ResetPasswordSerializer(data=request.data)
+    if serializer.is_valid():
+        token = serializer.validated_data['token']
+        new_password = serializer.validated_data['password']
+        
+        try:
+            # Find user with this token
+            user = User.objects.get(reset_token=token)
+            
+            # Validate token
+            if not user.is_reset_token_valid(token):
+                return Response({
+                    'error': 'Invalid or expired reset token. Please request a new password reset.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Set new password
+            user.set_password(new_password)
+            user.clear_reset_token()
+            
+            return Response({
+                'message': 'Password reset successful! You can now login with your new password.'
+            }, status=status.HTTP_200_OK)
+            
+        except User.DoesNotExist:
+            return Response({
+                'error': 'Invalid reset token.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+    return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def reset_password(request):
+    """Reset password using token."""
+    from .serializers import ResetPasswordSerializer
+    from datetime import timedelta
+    
+    serializer = ResetPasswordSerializer(data=request.data)
+    if serializer.is_valid():
+        token = serializer.validated_data['token']
+        new_password = serializer.validated_data['new_password']
+        
+        try:
+            user = User.objects.get(reset_token=token)
+            
+            # Check if token is expired (1 hour expiry)
+            if user.reset_token_created_at:
+                token_age = timezone.now() - user.reset_token_created_at
+                if token_age > timedelta(hours=1):
+                    return Response({
+                        'error': 'Reset token has expired. Please request a new one.'
+                    }, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                return Response({
+                    'error': 'Invalid reset token.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Reset password
+            user.set_password(new_password)
+            user.reset_token = None
+            user.reset_token_created_at = None
+            user.save()
+            
+            return Response({
+                'message': 'Password reset successfully. You can now login with your new password.'
+            }, status=status.HTTP_200_OK)
+            
+        except User.DoesNotExist:
+            return Response({
+                'error': 'Invalid reset token.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+    
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
@@ -345,4 +484,19 @@ def linkedin_oauth_simple(request):
             {'error': str(e)},
             status=status.HTTP_400_BAD_REQUEST
         )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_users(request):
+    """List all users - admin only for full access."""
+    if not request.user.is_staff:
+        return Response(
+            {'error': 'Admin privileges required'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    users = User.objects.all().order_by('-created_at')
+    serializer = UserSerializer(users, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
 

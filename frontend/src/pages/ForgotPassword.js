@@ -17,9 +17,25 @@ const ForgotPassword = () => {
 
     try {
       const response = await axios.post('http://localhost:8000/auth/forgot-password/', { email });
-      setMessage(response.data.message || 'Password reset email sent successfully!');
+      
+      // Display message
+      let displayMessage = response.data.message || 'Password reset email sent successfully!';
+      
+      // If dev mode and token is provided, show the reset URL
+      if (response.data.reset_url) {
+        displayMessage += `\n\nDev Mode - Click here to reset: ${response.data.reset_url}`;
+      }
+      
+      setMessage(displayMessage);
     } catch (err) {
-      setError(err.response?.data?.error || err.response?.data?.detail || 'Failed to send reset email. Please try again.');
+      console.error('Forgot password error:', err.response?.data);
+      
+      // Show detailed error
+      let errorMsg = 'Failed to send reset email. Please try again.';
+      if (err.response?.data) {
+        errorMsg = err.response.data.error || err.response.data.detail || JSON.stringify(err.response.data);
+      }
+      setError(errorMsg);
     } finally {
       setLoading(false);
     }
@@ -34,7 +50,11 @@ const ForgotPassword = () => {
             <h2 style={{ marginBottom: '30px', textAlign: 'center' }}>Forgot Password</h2>
             
             {error && <div className="error-message">{error}</div>}
-            {message && <div className="success-message">{message}</div>}
+            {message && (
+              <div className="success-message" style={{ whiteSpace: 'pre-line' }}>
+                {message}
+              </div>
+            )}
 
             <form onSubmit={handleSubmit}>
               <div className="form-group">

@@ -12,8 +12,8 @@ class UserSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = User
-        fields = ['id', 'name', 'email', 'linkedin_url', 'auth_provider', 'has_voted', 'created_at']
-        read_only_fields = ['id', 'created_at', 'has_voted']
+        fields = ['id', 'name', 'email', 'linkedin_url', 'auth_provider', 'has_voted', 'is_staff', 'created_at']
+        read_only_fields = ['id', 'created_at', 'has_voted', 'is_staff']
 
 
 class SignupSerializer(serializers.ModelSerializer):
@@ -70,15 +70,38 @@ class ForgotPasswordSerializer(serializers.Serializer):
     """Serializer for forgot password request."""
     email = serializers.EmailField(required=True)
     
-    def validate_email(self, value):
-        """Validate that email exists."""
-        if not User.objects.filter(email=value).exists():
-            raise serializers.ValidationError('No user found with this email address.')
-        return value
+    # Note: We don't validate email existence here for security reasons
+    # The view will handle this to avoid revealing which emails exist
 
 
 class OAuthSerializer(serializers.Serializer):
     """Serializer for OAuth token exchange."""
     access_token = serializers.CharField(required=True)
     provider = serializers.ChoiceField(choices=['google', 'linkedin'], required=True)
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    """Serializer for password reset."""
+    token = serializers.CharField(required=True)
+    new_password = serializers.CharField(required=True, validators=[validate_password])
+    confirm_password = serializers.CharField(required=True)
+    
+    def validate(self, attrs):
+        """Validate that passwords match."""
+        if attrs['new_password'] != attrs['confirm_password']:
+            raise serializers.ValidationError({"confirm_password": "Passwords do not match."})
+        return attrs
+
+
+class ResetPasswordSerializer(serializers.Serializer):
+    """Serializer for password reset confirmation."""
+    token = serializers.CharField(required=True)
+    password = serializers.CharField(required=True, write_only=True, validators=[validate_password])
+    password_confirm = serializers.CharField(required=True, write_only=True)
+    
+    def validate(self, attrs):
+        """Validate that passwords match."""
+        if attrs['password'] != attrs['password_confirm']:
+            raise serializers.ValidationError({"password": "Password fields didn't match."})
+        return attrs
 

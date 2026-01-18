@@ -7,8 +7,10 @@ import Home from './pages/Home';
 import Login from './pages/Login';
 import Signup from './pages/Signup';
 import ForgotPassword from './pages/ForgotPassword';
+import ResetPassword from './pages/ResetPassword';
 import Vote from './pages/Vote';
 import Voters from './pages/Voters';
+import Admin from './pages/Admin';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
@@ -27,6 +29,7 @@ function App() {
               <Route path="/login" element={<Login />} />
               <Route path="/signup" element={<Signup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
+              <Route path="/reset-password/:token" element={<ResetPassword />} />
               <Route
                 path="/vote"
                 element={
@@ -40,6 +43,14 @@ function App() {
                 element={
                   <PrivateRoute>
                     <Voters />
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/admin"
+                element={
+                  <PrivateRoute>
+                    <Admin />
                   </PrivateRoute>
                 }
               />

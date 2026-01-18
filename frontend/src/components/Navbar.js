@@ -87,6 +87,23 @@ const Navbar = () => {
             onMouseLeave={(e) => e.target.style.color = '#64748B'}>
               Voters
             </Link>
+            {user?.is_staff && (
+              <Link to="/admin" style={{
+                color: '#64748B',
+                fontWeight: '600',
+                textDecoration: 'none',
+                transition: 'color 0.2s ease',
+                padding: '8px 0',
+                fontSize: '15px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '6px'
+              }}
+              onMouseEnter={(e) => e.target.style.color = '#0F172A'}
+              onMouseLeave={(e) => e.target.style.color = '#64748B'}>
+                <span>👑</span> Admin
+              </Link>
+            )}
           </div>
           <div style={{
             display: 'flex',

@@ -128,7 +128,9 @@ def vote_statistics(request):
     total_votes = Vote.objects.count()
     
     # Get vote counts per candidate
-    candidate_stats = Vote.objects.values('candidate__id', 'candidate__name').annotate(
+    candidate_stats = Vote.objects.values(
+        'candidate__id', 'candidate__name', 'candidate__team_id'
+    ).annotate(
         vote_count=Count('id')
     ).order_by('-vote_count')
     
@@ -137,8 +139,9 @@ def vote_statistics(request):
     for stat in candidate_stats:
         percentage = (stat['vote_count'] / total_votes * 100) if total_votes > 0 else 0
         stats_data.append({
-            'candidate_id': stat['candidate__id'],
-            'candidate_name': stat['candidate__name'],
+            'id': stat['candidate__id'],
+            'name': stat['candidate__name'],
+            'team_id': stat['candidate__team_id'],
             'vote_count': stat['vote_count'],
             'percentage': round(percentage, 2),
         })
@@ -155,11 +158,51 @@ def vote_statistics(request):
     
     return Response({
         'total_votes': total_votes,
+        'candidates_by_votes': stats_data,
         'candidate_statistics': stats_data,
         'recent_votes': {
             'last_24_hours': last_24h,
             'last_7_days': last_week,
         },
         'votes_by_auth_provider': list(votes_by_provider),
+    }, status=status.HTTP_200_OK)
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def list_votes(request):
+    """List all votes - admin only."""
+    if not request.user.is_staff:
+        return Response(
+            {'error': 'Admin privileges required'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    votes = Vote.objects.select_related('user', 'candidate').all().order_by('-created_at')
+    serializer = VoteSerializer(votes, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def reset_votes(request):
+    """Reset all votes - admin only."""
+    if not request.user.is_staff:
+        return Response(
+            {'error': 'Admin privileges required'},
+            status=status.HTTP_403_FORBIDDEN
+        )
+    
+    # Delete all votes
+    count = Vote.objects.count()
+    Vote.objects.all().delete()
+    
+    # Reset has_voted status for all users
+    from django.contrib.auth import get_user_model
+    User = get_user_model()
+    User.objects.all().update(has_voted=False)
+    
+    return Response({
+        'message': f'Successfully reset {count} votes'
     }, status=status.HTTP_200_OK)
 

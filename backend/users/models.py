@@ -58,11 +58,11 @@ class User(AbstractBaseUser, PermissionsMixin):
     
     # Password reset fields
     reset_token = models.CharField(max_length=100, blank=True, null=True)
-    reset_token_created_at = models.DateTimeField(blank=True, null=True)
-    
-    # Password reset fields
-    reset_token = models.CharField(max_length=100, blank=True, null=True)
     reset_token_expires = models.DateTimeField(blank=True, null=True)
+    
+    # Email verification fields
+    is_email_verified = models.BooleanField(default=False)
+    verification_token = models.CharField(max_length=100, blank=True, null=True)
     
     # Django admin fields
     is_staff = models.BooleanField(default=False)
@@ -81,28 +81,20 @@ class User(AbstractBaseUser, PermissionsMixin):
     def __str__(self):
         return f"{self.name} ({self.email})"
     
-    def generate_reset_token(self):
-        """Generate a secure password reset token."""
-        self.reset_token = secrets.token_urlsafe(32)
-        self.reset_token_expires = timezone.now() + timedelta(hours=1)
+    def generate_verification_token(self):
+        """Generate a secure email verification token."""
+        self.verification_token = secrets.token_urlsafe(32)
         self.save()
-        return self.reset_token
+        return self.verification_token
     
-    def is_reset_token_valid(self, token):
-        """Check if the reset token is valid and not expired."""
-        if not self.reset_token or not self.reset_token_expires:
-            return False
-        if self.reset_token != token:
-            return False
-        if timezone.now() > self.reset_token_expires:
-            return False
-        return True
-    
-    def clear_reset_token(self):
-        """Clear the reset token after use."""
-        self.reset_token = None
-        self.reset_token_expires = None
-        self.save()
+    def verify_email(self, token):
+        """Verify email with the provided token."""
+        if self.verification_token == token:
+            self.is_email_verified = True
+            self.verification_token = None
+            self.save()
+            return True
+        return False
     
     def generate_reset_token(self):
         """Generate a secure password reset token."""

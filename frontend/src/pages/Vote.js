@@ -466,33 +466,8 @@ const Vote = () => {
                 lineHeight: '1.6',
                 marginBottom: '32px'
               }}>
-                Your vote has been recorded securely. You can view the results on the results page.
+                Your vote has been recorded securely. Thank you for participating!
               </p>
-              <button
-                onClick={() => navigate('/dashboard')}
-                style={{
-                  padding: '14px 32px',
-                  background: '#2563EB',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '12px',
-                  fontSize: '16px',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease',
-                  boxShadow: '0 4px 14px rgba(37, 99, 235, 0.3)'
-                }}
-                onMouseEnter={(e) => {
-                  e.target.style.transform = 'translateY(-2px)';
-                  e.target.style.boxShadow = '0 8px 20px rgba(37, 99, 235, 0.4)';
-                }}
-                onMouseLeave={(e) => {
-                  e.target.style.transform = 'translateY(0)';
-                  e.target.style.boxShadow = '0 4px 14px rgba(37, 99, 235, 0.3)';
-                }}
-              >
-                Go to Dashboard
-              </button>
             </div>
           )}
         </div>

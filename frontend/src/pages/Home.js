@@ -32,13 +32,7 @@ const Home = () => {
       <section className="hero-section-modern">
         <div className="hero-container">
           <div className="hero-content-modern">
-            <div className="hero-badge-modern">
-              <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
-                <circle cx="8" cy="8" r="3" fill="#3B82F6"/>
-                <circle cx="8" cy="8" r="7" stroke="#3B82F6" strokeWidth="1" opacity="0.3"/>
-              </svg>
-              <span>Secure & Transparent Voting</span>
-            </div>
+          
             
             <h1 className="hero-title-modern">
               Democracy Made
@@ -249,28 +243,22 @@ const Home = () => {
       </section>
 
       {/* Footer */}
-      <footer className="footer-modern">
+      <footer className="footer-modern white-footer">
         <div className="footer-container">
           <div className="footer-top">
             <div className="footer-brand">
               <div className="footer-logo">
                 <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
-                  <rect width="32" height="32" rx="8" fill="url(#footerGradient)"/>
-                  <path d="M10 16L14 20L22 12" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-                  <defs>
-                    <linearGradient id="footerGradient" x1="0" y1="0" x2="32" y2="32">
-                      <stop offset="0%" stopColor="#3B82F6"/>
-                      <stop offset="100%" stopColor="#1D4ED8"/>
-                    </linearGradient>
-                  </defs>
+                  <rect width="32" height="32" rx="8" fill="#F1F5F9"/>
+                  <path d="M10 16L14 20L22 12" stroke="#0F172A" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span>VoteHub</span>
+                <span style={{color: '#0F172A'}}>VoteHub</span>
               </div>
-              <p className="footer-tagline">Secure & transparent online voting platform</p>
+              <p className="footer-tagline" style={{color: '#64748B'}}>Secure & transparent online voting platform</p>
             </div>
           </div>
           <div className="footer-bottom">
-            <p>&copy; 2026 VoteHub. All rights reserved.</p>
+            <p style={{color: '#94A3B8'}}>&copy; 2026 VoteHub. All rights reserved.</p>
           </div>
         </div>
       </footer>

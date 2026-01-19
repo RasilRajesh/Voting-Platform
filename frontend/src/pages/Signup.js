@@ -9,6 +9,7 @@ const Signup = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    linkedin_url: '',
     password: '',
     password_confirm: '',
   });
@@ -59,8 +60,12 @@ const Signup = () => {
 
     try {
       const response = await axios.post('http://127.0.0.1:8000/auth/signup/', formData);
+      
+      // Auto-login the user
       login(response.data.user, response.data.tokens);
       toast.success('Account created successfully!');
+      
+      // Redirect to vote page
       navigate('/vote');
     } catch (error) {
       const errorData = error.response?.data;
@@ -164,6 +169,27 @@ const Signup = () => {
                 value={formData.email}
                 onChange={handleChange}
                 required
+              />
+            </div>
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="linkedin_url" className="form-label">
+              LinkedIn Profile <span style={{ color: '#94a3b8', fontWeight: '400' }}>(Optional)</span>
+            </label>
+            <div className="input-wrapper">
+              <svg className="input-icon" width="20" height="20" viewBox="0 0 20 20" fill="none">
+                <path d="M16.6667 2.5H3.33333C2.8731 2.5 2.5 2.8731 2.5 3.33333V16.6667C2.5 17.1269 2.8731 17.5 3.33333 17.5H16.6667C17.1269 17.5 17.5 17.1269 17.5 16.6667V3.33333C17.5 2.8731 17.1269 2.5 16.6667 2.5Z" stroke="#0A66C2" strokeWidth="1.5"/>
+                <path d="M5.83333 8.33333V14.1667M5.83333 5.83333V5.84167M9.16667 8.33333V14.1667M9.16667 8.33333C9.16667 7.41286 9.91286 6.66667 10.8333 6.66667C11.7538 6.66667 12.5 7.41286 12.5 8.33333V14.1667M12.5 11.6667V14.1667" stroke="#0A66C2" strokeWidth="1.5" strokeLinecap="round"/>
+              </svg>
+              <input
+                type="url"
+                id="linkedin_url"
+                name="linkedin_url"
+                className="form-input"
+                placeholder="https://linkedin.com/in/yourprofile"
+                value={formData.linkedin_url}
+                onChange={handleChange}
               />
             </div>
           </div>

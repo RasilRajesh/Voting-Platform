@@ -1,23 +1,27 @@
 # Voting Platform
 
-A secure online voting system with premium UI built using Django REST Framework and React.js.
+A secure, responsive online voting system for internship assignments, built with Django REST Framework and React.js.
 
 ## Tech Stack
 
-**Backend:** Django, Django REST Framework, JWT Authentication  
-**Frontend:** React.js, React Router, Axios
+- **Backend:** Django, Django REST Framework, JWT Authentication
+- **Frontend:** React.js, React Router, Axios
 
 ## Features
 
-- User authentication (Local signup/login, Google OAuth, LinkedIn OAuth)
-- One vote per user with strict enforcement
-- Premium white-themed responsive UI
-- Live voting results
-- Voters list with LinkedIn profiles
+- Local signup/login with email verification
+- Google and LinkedIn OAuth authentication
+- One vote per user (strict enforcement)
+- Premium white-themed, mobile-responsive UI
+- Live voting results (admin-only dashboard)
+- Voters and candidates list with LinkedIn profile links
+- Password reset via email
+- Admin panel for candidate and voter management
 
 ## Setup
 
 ### Backend
+
 ```bash
 cd backend
 pip install -r requirements.txt
@@ -26,15 +30,21 @@ python manage.py runserver
 ```
 
 ### Frontend
+
 ```bash
 cd frontend
 npm install
 npm start
 ```
 
-Access the application at `http://localhost:3000`
+Access the application at [http://localhost:3000]
+
+## Assignment Compliance
+
+- Responsive UI
+- Email verification for secure registration
+- LinkedIn profile display for voters and candidates
+- One-time voting enforcement
+- Admin overview and management
 
 ---
-
-Built with Django & React
-

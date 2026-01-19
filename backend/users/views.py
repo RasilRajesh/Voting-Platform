@@ -38,8 +38,49 @@ def signup(request):
     serializer = SignupSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
+        
+        # Generate verification token and send email
+        token = user.generate_verification_token()
+        
+        # Build verification URL
+        frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')
+        verify_url = f"{frontend_url}/verify-email?token={token}"
+        
+        # Send verification email
+        subject = 'Verify Your Email - Voting Platform'
+        message = f"""Hello {user.name},
+
+Welcome to the Voting Platform!
+
+Please verify your email address by clicking the link below:
+{verify_url}
+
+Verifying your email allows you to reset your password if you ever forget it.
+
+If you didn't create this account, please ignore this email.
+
+Best regards,
+Voting Platform Team
+"""
+        
+        try:
+            send_mail(
+                subject,
+                message,
+                settings.EMAIL_HOST_USER,
+                [user.email],
+                fail_silently=False,
+            )
+        except Exception as e:
+            # In development, log the error but still create the account
+            if settings.DEBUG:
+                print(f"Email sending failed: {e}")
+                print(f"Verification URL: {verify_url}")
+        
+        # Auto-login the user immediately
         tokens = get_tokens_for_user(user)
         return Response({
+            'message': 'Account created successfully! Check your email to verify for password recovery.',
             'user': UserSerializer(user).data,
             'tokens': tokens
         }, status=status.HTTP_201_CREATED)
@@ -53,6 +94,9 @@ def login(request):
     serializer = LoginSerializer(data=request.data, context={'request': request})
     if serializer.is_valid():
         user = serializer.validated_data['user']
+        
+        # Allow login even if email is not verified
+        # Verification is only required for password reset
         tokens = get_tokens_for_user(user)
         return Response({
             'user': UserSerializer(user).data,
@@ -75,6 +119,12 @@ def forgot_password(request):
             if user.auth_provider != 'local':
                 return Response({
                     'error': f'This account uses {user.auth_provider} authentication. Please use {user.auth_provider} to sign in.'
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
+            # Require email verification for password reset
+            if not user.is_email_verified:
+                return Response({
+                    'error': 'Please verify your email first. Check your inbox for the verification link.'
                 }, status=status.HTTP_400_BAD_REQUEST)
             
             # Generate reset token
@@ -164,6 +214,38 @@ def reset_password(request):
                 'error': 'Invalid reset token.'
             }, status=status.HTTP_400_BAD_REQUEST)
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def verify_email(request):
+    """Verify email with token."""
+    token = request.data.get('token')
+    
+    if not token:
+        return Response({
+            'error': 'Verification token is required.'
+        }, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        user = User.objects.get(verification_token=token)
+        
+        if user.verify_email(token):
+            tokens = get_tokens_for_user(user)
+            return Response({
+                'message': 'Email verified successfully! You can now login.',
+                'user': UserSerializer(user).data,
+                'tokens': tokens
+            }, status=status.HTTP_200_OK)
+        else:
+            return Response({
+                'error': 'Invalid verification token.'
+            }, status=status.HTTP_400_BAD_REQUEST)
+            
+    except User.DoesNotExist:
+        return Response({
+            'error': 'Invalid verification token.'
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 
 @api_view(['POST'])
@@ -360,6 +442,7 @@ def google_oauth_simple(request):
             defaults={
                 'name': name or email.split('@')[0],
                 'auth_provider': 'google',
+                'is_email_verified': True,  # Google emails are already verified
             }
         )
         
@@ -367,6 +450,7 @@ def google_oauth_simple(request):
             # Update existing user
             user.name = name or user.name
             user.auth_provider = 'google'
+            user.is_email_verified = True  # Google emails are already verified
             user.save()
         
         tokens = get_tokens_for_user(user)
@@ -484,6 +568,7 @@ def linkedin_oauth_simple(request):
             defaults={
                 'name': name or email.split('@')[0],
                 'auth_provider': 'linkedin',
+                'is_email_verified': True,  # LinkedIn emails are already verified
                 'linkedin_url': f"https://www.linkedin.com/in/{linkedin_id}/" if linkedin_id else '',
             }
         )
@@ -492,6 +577,7 @@ def linkedin_oauth_simple(request):
             # Update existing user
             user.name = name or user.name
             user.auth_provider = 'linkedin'
+            user.is_email_verified = True  # LinkedIn emails are already verified
             if linkedin_id and not user.linkedin_url:
                 user.linkedin_url = f"https://www.linkedin.com/in/{linkedin_id}/"
             user.save()

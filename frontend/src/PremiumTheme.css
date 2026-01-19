@@ -500,9 +500,31 @@
 
 /* Footer Modern */
 .footer-modern {
-  background: #0F172A;
-  color: white;
+  background: #fff;
+  color: #0F172A;
   padding: 60px 24px 24px;
+  border-top: 1px solid #E5E7EB;
+}
+
+.footer-modern .footer-logo svg {
+  background: none;
+}
+
+.footer-modern .footer-logo span {
+  color: #0F172A;
+}
+
+.footer-modern .footer-tagline {
+  color: #64748B;
+}
+
+.footer-modern .footer-bottom p {
+  color: #94A3B8;
+}
+
+.white-footer {
+  background: #fff !important;
+  color: #0F172A !important;
 }
 
 .footer-container {

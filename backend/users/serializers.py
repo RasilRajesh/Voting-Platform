@@ -85,23 +85,10 @@ class ResetPasswordSerializer(serializers.Serializer):
     token = serializers.CharField(required=True)
     new_password = serializers.CharField(required=True, validators=[validate_password])
     confirm_password = serializers.CharField(required=True)
-    
+
     def validate(self, attrs):
         """Validate that passwords match."""
         if attrs['new_password'] != attrs['confirm_password']:
             raise serializers.ValidationError({"confirm_password": "Passwords do not match."})
-        return attrs
-
-
-class ResetPasswordSerializer(serializers.Serializer):
-    """Serializer for password reset confirmation."""
-    token = serializers.CharField(required=True)
-    password = serializers.CharField(required=True, write_only=True, validators=[validate_password])
-    password_confirm = serializers.CharField(required=True, write_only=True)
-    
-    def validate(self, attrs):
-        """Validate that passwords match."""
-        if attrs['password'] != attrs['password_confirm']:
-            raise serializers.ValidationError({"password": "Password fields didn't match."})
         return attrs
 

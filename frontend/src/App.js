@@ -12,6 +12,7 @@ import VerifyEmail from './pages/VerifyEmail';
 import Vote from './pages/Vote';
 import Voters from './pages/Voters';
 import Admin from './pages/Admin';
+import ManualResetPassword from './pages/ManualResetPassword';
 import { ToastContainer } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import './App.css';
@@ -31,6 +32,7 @@ function App() {
               <Route path="/signup" element={<Signup />} />
               <Route path="/forgot-password" element={<ForgotPassword />} />
               <Route path="/reset-password/:token" element={<ResetPassword />} />
+              <Route path="/manual-reset-password" element={<ManualResetPassword />} />
               <Route path="/verify-email" element={<VerifyEmail />} />
               <Route
                 path="/vote"

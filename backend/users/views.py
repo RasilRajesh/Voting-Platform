@@ -132,7 +132,7 @@ def forgot_password(request):
             
             # Build reset URL
             frontend_url = getattr(settings, 'FRONTEND_URL', 'http://localhost:3000')
-            reset_url = f"{frontend_url}/reset-password?token={token}"
+            reset_url = f"{frontend_url}/manual-reset-password"
             
             # Send email
             subject = 'Password Reset Request - Voting Platform'
@@ -140,10 +140,13 @@ def forgot_password(request):
 
 You requested to reset your password for the Voting Platform.
 
-Click the link below to reset your password:
+To reset your password, enter the following 6-digit reset code at:
 {reset_url}
 
-This link will expire in 1 hour.
+Your reset code:
+{token}
+
+This code will expire in 10 minutes.
 
 If you didn't request this, please ignore this email.
 
@@ -263,22 +266,16 @@ def reset_password(request):
         try:
             user = User.objects.get(reset_token=token)
             
-            # Check if token is expired (1 hour expiry)
-            if user.reset_token_created_at:
-                token_age = timezone.now() - user.reset_token_created_at
-                if token_age > timedelta(hours=1):
-                    return Response({
-                        'error': 'Reset token has expired. Please request a new one.'
-                    }, status=status.HTTP_400_BAD_REQUEST)
-            else:
+            # Check if token is expired
+            if not user.reset_token_expires or timezone.now() > user.reset_token_expires:
                 return Response({
-                    'error': 'Invalid reset token.'
+                    'error': 'Reset token has expired. Please request a new one.'
                 }, status=status.HTTP_400_BAD_REQUEST)
             
             # Reset password
             user.set_password(new_password)
             user.reset_token = None
-            user.reset_token_created_at = None
+            user.reset_token_expires = None
             user.save()
             
             return Response({

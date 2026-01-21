@@ -57,7 +57,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     created_at = models.DateTimeField(default=timezone.now)
     
     # Password reset fields
-    reset_token = models.CharField(max_length=100, blank=True, null=True)
+    reset_token = models.CharField(max_length=6, blank=True, null=True)
     reset_token_expires = models.DateTimeField(blank=True, null=True)
     
     # Email verification fields
@@ -97,14 +97,15 @@ class User(AbstractBaseUser, PermissionsMixin):
         return False
     
     def generate_reset_token(self):
-        """Generate a secure password reset token."""
-        self.reset_token = secrets.token_urlsafe(32)
-        self.reset_token_expires = timezone.now() + timedelta(hours=1)
+        """Generate a 6-digit numeric password reset code."""
+        import random
+        self.reset_token = f"{random.randint(100000, 999999)}"
+        self.reset_token_expires = timezone.now() + timedelta(minutes=10)
         self.save()
         return self.reset_token
     
     def is_reset_token_valid(self, token):
-        """Check if the reset token is valid and not expired."""
+        """Check if the reset code is valid and not expired."""
         if not self.reset_token or not self.reset_token_expires:
             return False
         if self.reset_token != token:

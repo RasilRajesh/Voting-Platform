@@ -504,6 +504,12 @@ def linkedin_oauth_simple(request):
                 'client_secret': settings.SOCIAL_AUTH_LINKEDIN_OAUTH2_SECRET,
             }
             
+            # Debug the exact parameters sent to LinkedIn to catch redirect/client_id mismatches
+            logger.info(
+                f"LinkedIn token exchange -> client_id: {settings.SOCIAL_AUTH_LINKEDIN_OAUTH2_KEY}, "
+                f"redirect_uri: {redirect_uri}"
+            )
+            
             logger.info(f"Exchanging code for token with client_id: {settings.SOCIAL_AUTH_LINKEDIN_OAUTH2_KEY}")
             token_response = requests.post(token_url, data=token_data)
             
@@ -540,22 +546,38 @@ def linkedin_oauth_simple(request):
         # Get user profile from LinkedIn OpenID Connect userinfo endpoint
         profile_url = 'https://api.linkedin.com/v2/userinfo'
         headers = {'Authorization': f'Bearer {access_token}'}
+        logger.info(f"Fetching LinkedIn profile from: {profile_url}")
         response = requests.get(profile_url, headers=headers)
         
+        logger.info(f"Profile response status: {response.status_code}")
+        logger.info(f"Profile response: {response.text[:500]}")  # Log first 500 chars
+        
         if response.status_code != 200:
+            error_detail = response.text
+            logger.error(f"LinkedIn profile fetch failed. Status: {response.status_code}, Response: {error_detail}")
             return Response(
-                {'error': f'Invalid access token. Status: {response.status_code}, Response: {response.text}'},
+                {'error': f'Failed to fetch LinkedIn profile. Status: {response.status_code}, Details: {error_detail}'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
-        user_data = response.json()
+        try:
+            user_data = response.json()
+        except ValueError as e:
+            logger.error(f"Failed to parse LinkedIn response as JSON: {response.text}")
+            return Response(
+                {'error': f'Invalid response from LinkedIn: {response.text[:200]}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        logger.info(f"LinkedIn user data: {user_data}")
         email = user_data.get('email')
         name = user_data.get('name', '')
         linkedin_id = user_data.get('sub', '')
         
         if not email:
+            logger.warning(f"Email not found in LinkedIn profile. Available fields: {list(user_data.keys())}")
             return Response(
-                {'error': 'Email not found in LinkedIn profile'},
+                {'error': f'Email not found in LinkedIn profile. Available fields: {list(user_data.keys())}'},
                 status=status.HTTP_400_BAD_REQUEST
             )
         
@@ -580,14 +602,24 @@ def linkedin_oauth_simple(request):
             user.save()
         
         tokens = get_tokens_for_user(user)
+        logger.info(f"LinkedIn login successful for user: {email}")
         return Response({
             'user': UserSerializer(user).data,
             'tokens': tokens
         }, status=status.HTTP_200_OK)
         
-    except Exception as e:
+    except requests.exceptions.RequestException as e:
+        error_msg = f'Network error while fetching LinkedIn profile: {str(e)}'
+        logger.error(error_msg)
         return Response(
-            {'error': str(e)},
+            {'error': error_msg},
+            status=status.HTTP_400_BAD_REQUEST
+        )
+    except Exception as e:
+        error_msg = f'Unexpected error: {str(e)}'
+        logger.error(error_msg, exc_info=True)
+        return Response(
+            {'error': error_msg},
             status=status.HTTP_400_BAD_REQUEST
         )
 

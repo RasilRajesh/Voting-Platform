@@ -11,10 +11,12 @@
 In your LinkedIn app settings:
 
 ### Authorized redirect URLs:
-Add these URLs to your LinkedIn app:
+**IMPORTANT:** Add ALL of these URLs to your LinkedIn app (exact match required):
 - `http://localhost:3000/login`
 - `http://localhost:3000/signup`
-- `http://127.0.0.1:8000/complete/linkedin-oauth2/`
+- `http://127.0.0.1:3000/login`
+- `http://127.0.0.1:3000/signup`
+- `http://127.0.0.1:8000/complete/linkedin-oauth2/` (if using social-auth)
 
 ### Products/Scopes:
 Make sure you have these scopes enabled:
@@ -64,18 +66,66 @@ npm start
 
 ## Troubleshooting
 
-### "Redirect URI mismatch" error:
-- Make sure the redirect URL in LinkedIn app matches exactly (including http/https, port, path)
-- Check for trailing slashes
+### "LinkedIn login failed. Please try again." error:
 
-### "Invalid scope" error:
-- Verify you have the correct products/scopes enabled in LinkedIn app
+**The error message will now show the actual backend error.** Check the browser console or the error message displayed on screen for details.
+
+### Common issues and fixes:
+
+#### 1. "Redirect URI mismatch" error:
+- Make sure the redirect URL in LinkedIn app matches **exactly** (including http/https, port, path)
+- The app uses `${window.location.origin}/login` as redirect URI
+- If running on `http://localhost:3000`, add `http://localhost:3000/login` to LinkedIn app
+- If running on `http://127.0.0.1:3000`, add `http://127.0.0.1:3000/login` to LinkedIn app
+- Check for trailing slashes - they must match exactly
+- **Important**: Add both `http://localhost:3000/login` AND `http://127.0.0.1:3000/login` if you're unsure which one will be used
+
+#### 2. "Invalid scope" or "Failed to exchange code for token" error:
+- Verify you have the correct products/scopes enabled in LinkedIn app:
+  - Go to LinkedIn Developers → Your App → Products
+  - Enable "Sign In with LinkedIn using OpenID Connect"
+  - Required scopes: `openid`, `profile`, `email`
 - Some scopes require LinkedIn app review
+- Make sure your LinkedIn app is not in "Development" mode restrictions
 
-### Backend errors:
-- Make sure `python-social-auth` packages are installed
+#### 3. "Failed to fetch LinkedIn profile" or "Invalid access token" error:
+- Check backend logs for detailed error messages
+- Verify your LinkedIn app has the correct API access
+- Ensure `LINKEDIN_OAUTH2_KEY` and `LINKEDIN_OAUTH2_SECRET` are set correctly in `backend/.env`
+- Restart the backend server after changing `.env` file
+
+#### 4. "Email not found in LinkedIn profile" error:
+- Make sure you've requested the `email` scope
+- Verify your LinkedIn app has access to email information
+- Check that the user has granted email permissions during authorization
+
+#### 5. Backend errors:
+- Make sure `requests` package is installed: `pip install requests`
 - Check that settings.py has LinkedIn backend configured
-- Verify .env variables are loaded correctly
+- Verify .env variables are loaded correctly (check for typos)
+- Check backend console/logs for detailed error messages
+- Ensure backend server is running on `http://127.0.0.1:8000`
+
+#### 6. Network/CORS errors:
+- Make sure backend CORS settings allow requests from frontend origin
+- Check that backend server is running and accessible
+- Verify the API endpoint URL is correct: `http://127.0.0.1:8000/auth/linkedin/`
+
+### Debugging steps:
+
+1. **Check browser console** (F12) for detailed error messages
+2. **Check backend logs** for LinkedIn API responses
+3. **Verify environment variables**:
+   ```bash
+   # Backend
+   cd backend
+   python -c "from django.conf import settings; print(settings.SOCIAL_AUTH_LINKEDIN_OAUTH2_KEY)"
+   
+   # Frontend - check .env file exists and has REACT_APP_LINKEDIN_CLIENT_ID
+   ```
+4. **Test LinkedIn OAuth URL directly**:
+   - The URL should look like: `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=...`
+   - Check browser network tab to see the exact redirect URI being used
 
 ## Notes
 

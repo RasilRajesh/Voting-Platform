@@ -38,7 +38,7 @@ npm start
 ```
 
 Access the application at [http://localhost:3000]
-
+fi
 ## Assignment Compliance
 
 - Responsive UI

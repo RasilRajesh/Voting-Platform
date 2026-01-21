@@ -16,13 +16,17 @@ const Signup = () => {
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
   const navigate = useNavigate();
+  const codeProcessedRef = React.useRef(false);
 
   // Handle LinkedIn OAuth callback
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const code = urlParams.get('code');
 
-    if (code) {
+    if (code && !codeProcessedRef.current) {
+      codeProcessedRef.current = true; // Mark as processed
+      // Clear code from URL IMMEDIATELY to prevent reuse on refresh
+      window.history.replaceState({}, document.title, window.location.pathname);
       handleLinkedInCallback(code);
     }
   }, []);
@@ -32,13 +36,20 @@ const Signup = () => {
     try {
       const response = await axios.post('http://127.0.0.1:8000/auth/linkedin/', {
         code: code,
-        redirect_uri: 'http://localhost:3000/signup'
+        // Send the exact origin we’re on to avoid localhost/127.0.0.1 mismatches
+        redirect_uri: `${window.location.origin}/signup`
       });
       login(response.data.user, response.data.tokens);
       toast.success('LinkedIn signup successful!');
       navigate('/vote');
     } catch (error) {
-      toast.error('LinkedIn signup failed. Please try again.');
+      // Extract and display the actual error message from the backend
+      const errorMessage = error.response?.data?.error || 
+                          error.response?.data?.message || 
+                          error.message || 
+                          'LinkedIn signup failed. Please try again.';
+      console.error('LinkedIn signup error:', error.response?.data || error.message);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -102,9 +113,15 @@ const Signup = () => {
   });
 
   const handleLinkedInLogin = () => {
-    // LinkedIn OAuth URL with your client ID
-    const LINKEDIN_CLIENT_ID = process.env.REACT_APP_LINKEDIN_CLIENT_ID || 'YOUR_LINKEDIN_CLIENT_ID';
-    const REDIRECT_URI = encodeURIComponent('http://localhost:3000/signup');
+    // Fail fast if client ID is missing to avoid mismatched OAuth apps
+    const LINKEDIN_CLIENT_ID = process.env.REACT_APP_LINKEDIN_CLIENT_ID;
+    if (!LINKEDIN_CLIENT_ID || LINKEDIN_CLIENT_ID === 'YOUR_LINKEDIN_CLIENT_ID') {
+      toast.error('LinkedIn is not configured. Please set REACT_APP_LINKEDIN_CLIENT_ID.');
+      return;
+    }
+
+    // Always reuse the exact origin the app is being served from
+    const REDIRECT_URI = encodeURIComponent(`${window.location.origin}/signup`);
     const STATE = Math.random().toString(36).substring(7);
     const SCOPE = encodeURIComponent('openid profile email');
     

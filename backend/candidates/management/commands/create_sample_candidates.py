@@ -29,7 +29,7 @@ class Command(BaseCommand):
         # Create Candidate 2
         candidate2 = Candidate.objects.create(
             name='Jane Smith',
-            linkedin_url='https://www.linkedin.com/in/janesmith/',
+            linkedin_url='',
             team_id=2
         )
         self.stdout.write(

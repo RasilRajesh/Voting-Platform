@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import '../HomeResponsive.css';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
 

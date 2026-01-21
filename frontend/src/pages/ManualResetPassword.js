@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import '../HomeResponsive.css';
 import axios from 'axios';
 import { Link, useNavigate } from 'react-router-dom';
 
@@ -55,8 +56,8 @@ const ManualResetPassword = () => {
   return (
     <>
       {/* No Navbar for reset page to keep it separate from authenticated navigation */}
-      <div className="container" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f3f4f6 0%, #e0e7ff 100%)', padding: '40px 0' }}>
-        <div style={{ maxWidth: '480px', margin: '60px auto', padding: '0 20px' }}>
+        <div className="home-responsive-root" style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #f3f4f6 0%, #e0e7ff 100%)', padding: '40px 0' }}>
+          <div className="home-responsive-nav-inner" style={{ maxWidth: '480px', margin: '60px auto', padding: '0 20px' }}>
           <div className="card" style={{ background: 'white', padding: '48px 40px 36px 40px', borderRadius: '18px', boxShadow: '0 6px 32px rgba(80, 112, 255, 0.10)', border: '1.5px solid #e5e7eb' }}>
             <h2 style={{ marginBottom: '18px', textAlign: 'center', fontWeight: 700, fontSize: '2rem', color: '#1e293b' }}>Reset Your Password</h2>
             <p style={{ textAlign: 'center', color: '#64748b', marginBottom: '28px', fontSize: '1rem' }}>Enter the 6-digit reset code sent to your email and set a new password.</p>

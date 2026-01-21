@@ -11,7 +11,7 @@ class CandidateSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Candidate
-        fields = ['id', 'name', 'profile_image', 'profile_image_url', 'linkedin_url', 'team_id', 'created_at']
+        fields = ['id', 'name', 'description', 'profile_image', 'profile_image_url', 'linkedin_url', 'team_id', 'created_at']
         read_only_fields = ['id', 'created_at']
     
     def get_profile_image_url(self, obj):

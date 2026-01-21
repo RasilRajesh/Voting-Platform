@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import '../HomeResponsive.css';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
@@ -33,7 +34,9 @@ const Analytics = () => {
     return (
       <>
         <Navbar />
-        <div className="loading">Loading analytics...</div>
+        <div className="home-responsive-root">
+          <div className="loading">Loading analytics...</div>
+        </div>
       </>
     );
   }
@@ -42,8 +45,10 @@ const Analytics = () => {
     return (
       <>
         <Navbar />
-        <div className="container">
-          <div className="error-message">{error || 'No statistics available'}</div>
+        <div className="home-responsive-root">
+          <div className="home-responsive-nav-inner">
+            <div className="error-message">{error || 'No statistics available'}</div>
+          </div>
         </div>
       </>
     );
@@ -52,11 +57,12 @@ const Analytics = () => {
   return (
     <>
       <Navbar />
-      <div className="container">
-        <h1 style={{ marginBottom: '30px', textAlign: 'center' }}>Voting Analytics Dashboard</h1>
+      <div className="home-responsive-root">
+        <div className="home-responsive-nav-inner">
+          <h1 style={{ marginBottom: '30px', textAlign: 'center' }}>Voting Analytics Dashboard</h1>
 
-        <div className="analytics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '30px' }}>
-          <div className="card">
+          <div className="analytics-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '20px', marginBottom: '30px' }}>
+            <div className="card">
             <h3 style={{ marginBottom: '10px', color: '#333' }}>Total Votes</h3>
             <div style={{ fontSize: '48px', fontWeight: 'bold', color: '#007bff' }}>
               {statistics.total_votes}

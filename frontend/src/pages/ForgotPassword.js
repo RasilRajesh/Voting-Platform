@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import '../HomeResponsive.css';
 import { Link } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
@@ -44,19 +45,9 @@ const ForgotPassword = () => {
   return (
     <>
       <Navbar />
-      <div className="container">
-        <div style={{ 
-          maxWidth: '480px', 
-          margin: '60px auto',
-          padding: '0 20px'
-        }}>
-          <div className="card" style={{
-            background: 'white',
-            padding: '40px',
-            borderRadius: '16px',
-            boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)',
-            border: '1px solid #e5e7eb'
-          }}>
+      <div className="home-responsive-root">
+        <div className="home-responsive-nav-inner" style={{ maxWidth: '480px', margin: '60px auto', padding: '0 20px' }}>
+          <div className="card" style={{ background: 'white', padding: '40px', borderRadius: '16px', boxShadow: '0 4px 20px rgba(0, 0, 0, 0.08)', border: '1px solid #e5e7eb' }}>
             <div style={{ textAlign: 'center', marginBottom: '30px' }}>
               <div style={{
                 width: '60px',

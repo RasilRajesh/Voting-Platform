@@ -54,7 +54,7 @@ const Navbar = () => {
               </linearGradient>
             </defs>
           </svg>
-          VoteHub
+           SecureVote
         </Link>
         <div style={{
           display: 'flex',

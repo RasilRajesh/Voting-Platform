@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from 'react';
+import '../HomeResponsive.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
 import { useAuth } from '../context/AuthContext';
+import '../PremiumTheme.css';
 
 const Dashboard = () => {
   const [candidates, setCandidates] = useState([]);
@@ -60,10 +62,8 @@ const Dashboard = () => {
       <Navbar />
       
       <div style={{
-        maxWidth: '1000px',
-        margin: '40px auto',
-        padding: '0 20px'
-      }}>
+          ...existing code...
+      <div className="dashboard-responsive-container">
         <h1 style={{
           fontSize: '32px',
           fontWeight: '600',
@@ -92,32 +92,9 @@ const Dashboard = () => {
             No candidates available.
           </p>
         ) : (
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-            gap: '30px'
-          }}>
+          <div className="dashboard-candidates-grid">
             {candidates.map((candidate) => (
-              <div key={candidate.id} style={{
-                background: 'white',
-                borderRadius: '12px',
-                padding: '32px',
-                boxShadow: '0 1px 3px rgba(0, 0, 0, 0.1)',
-                border: '1px solid #e2e8f0',
-                transition: 'all 0.3s ease',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                textAlign: 'center'
-              }}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.15)';
-                e.currentTarget.style.transform = 'translateY(-4px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = '0 1px 3px rgba(0, 0, 0, 0.1)';
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}>
+              <div key={candidate.id} className="dashboard-candidate-card">
                 {candidate.profile_image_url ? (
                   <img
                     src={candidate.profile_image_url}

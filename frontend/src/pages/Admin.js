@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import '../HomeResponsive.css';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import Navbar from '../components/Navbar';
@@ -33,22 +34,25 @@ const Admin = () => {
 
   const fetchAllData = async () => {
     setLoading(true);
+    setError('');
+    const token = localStorage.getItem('access_token');
+    const headers = { Authorization: `Bearer ${token}` };
     try {
-      const token = localStorage.getItem('access_token');
-      const headers = { Authorization: `Bearer ${token}` };
-
-      const [statsRes, usersRes, candidatesRes, votesRes] = await Promise.all([
-        axios.get('http://localhost:8000/api/votes/statistics/', { headers }),
-        axios.get('http://localhost:8000/api/users/', { headers }),
-        axios.get('http://localhost:8000/api/candidates/', { headers }),
-        axios.get('http://localhost:8000/api/votes/', { headers })
-      ]);
-
-      setStatistics(statsRes.data);
+      // Fetch users
+      const usersRes = await axios.get('http://localhost:8000/api/users/', { headers });
       setUsers(usersRes.data);
+
+      // Fetch candidates
+      const candidatesRes = await axios.get('http://localhost:8000/api/candidates/', { headers });
       setCandidates(candidatesRes.data);
+
+      // Fetch votes
+      const votesRes = await axios.get('http://localhost:8000/api/votes/', { headers });
       setVotes(votesRes.data);
-      setError('');
+
+      // Fetch statistics
+      const statsRes = await axios.get('http://localhost:8000/api/votes/statistics/', { headers });
+      setStatistics(statsRes.data);
     } catch (err) {
       setError('Failed to load admin data. Please try again.');
       console.error('Error fetching admin data:', err);
@@ -76,31 +80,42 @@ const Admin = () => {
   const handleSaveCandidate = async (formData) => {
     try {
       const token = localStorage.getItem('access_token');
-      const headers = { Authorization: `Bearer ${token}` };
+      const headers = { 
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      };
+
+      // Only send required fields
+      const payload = {
+        name: formData.name,
+        team_id: formData.team_id,
+        description: formData.description,
+        linkedin_url: formData.linkedin_url,
+        profile_image: formData.profile_image
+      };
 
       if (editingCandidate) {
-        // Update existing candidate
         await axios.put(
           `http://localhost:8000/api/candidates/${editingCandidate.id}/`,
-          formData,
+          payload,
           { headers }
         );
         alert('Candidate updated successfully');
       } else {
-        // Create new candidate
         await axios.post(
           'http://localhost:8000/api/candidates/create/',
-          formData,
+          payload,
           { headers }
         );
         alert('Candidate created successfully');
       }
-      
       fetchAllData();
       setIsModalOpen(false);
       setEditingCandidate(null);
     } catch (err) {
       console.error('Error saving candidate:', err);
+      console.error('Error details:', err.response?.data);
+      alert(`Failed to save candidate: ${err.response?.data?.error || err.message}`);
       throw err;
     }
   };

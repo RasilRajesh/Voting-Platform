@@ -1,3 +1,4 @@
+import '../HomeResponsive.css';
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
@@ -232,11 +233,14 @@ const Vote = () => {
                 key={candidate.id}
                 className="candidate-card-premium"
                 style={{
+                  position: 'relative',
                   cursor: hasVoted ? 'not-allowed' : 'pointer',
                   opacity: hasVoted ? 0.6 : 1,
                   border: selectedCandidate === candidate.id ? '2px solid #2563EB' : '1px solid #E2E8F0',
                   background: 'white',
-                  width: '360px'
+                  width: '360px',
+                  boxShadow: selectedCandidate === candidate.id ? '0 4px 20px rgba(37, 99, 235, 0.15)' : '0 2px 8px rgba(0, 0, 0, 0.05)',
+                  transition: 'all 0.2s ease'
                 }}
                 onClick={() => !hasVoted && setSelectedCandidate(candidate.id)}
               >
@@ -304,6 +308,7 @@ const Vote = () => {
 
                 {!hasVoted && (
                   <button
+                    type="button"
                     style={{
                       width: '100%',
                       padding: '14px',
@@ -312,7 +317,9 @@ const Vote = () => {
                         ? '#2563EB'
                         : 'white',
                       color: selectedCandidate === candidate.id ? 'white' : '#64748B',
-                      border: selectedCandidate === candidate.id ? 'none' : '2px solid #E2E8F0',
+                      border: selectedCandidate === candidate.id 
+                        ? '2px solid #2563EB' 
+                        : '2px solid #E2E8F0',
                       borderRadius: '10px',
                       fontWeight: '600',
                       fontSize: '15px',
@@ -321,26 +328,43 @@ const Vote = () => {
                       display: 'flex',
                       alignItems: 'center',
                       justifyContent: 'center',
-                      gap: '8px'
+                      gap: '8px',
+                      outline: 'none'
                     }}
                     onClick={(e) => {
+                      e.preventDefault();
                       e.stopPropagation();
                       setSelectedCandidate(candidate.id);
                     }}
                     onMouseEnter={(e) => {
                       if (selectedCandidate !== candidate.id) {
-                        e.target.style.background = '#F8FAFC';
-                        e.target.style.borderColor = '#CBD5E1';
+                        e.currentTarget.style.background = '#F8FAFC';
+                        e.currentTarget.style.borderColor = '#CBD5E1';
+                      } else {
+                        e.currentTarget.style.background = '#3B82F6';
+                        e.currentTarget.style.borderColor = '#3B82F6';
                       }
                     }}
                     onMouseLeave={(e) => {
                       if (selectedCandidate !== candidate.id) {
-                        e.target.style.background = 'white';
-                        e.target.style.borderColor = '#E2E8F0';
+                        e.currentTarget.style.background = 'white';
+                        e.currentTarget.style.borderColor = '#E2E8F0';
+                      } else {
+                        e.currentTarget.style.background = '#2563EB';
+                        e.currentTarget.style.borderColor = '#2563EB';
                       }
                     }}
                   >
-                    <span>{selectedCandidate === candidate.id ? 'Selected' : 'Select Candidate'}</span>
+                    {selectedCandidate === candidate.id ? (
+                      <>
+                        <svg width="18" height="18" viewBox="0 0 20 20" fill="none">
+                          <path d="M5 10L8.5 13.5L15 7" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+                        </svg>
+                        <span>Selected</span>
+                      </>
+                    ) : (
+                      <span>Select Candidate</span>
+                    )}
                   </button>
                 )}
               </div>

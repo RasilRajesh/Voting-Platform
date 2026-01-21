@@ -6,7 +6,7 @@ const CandidateModal = ({ isOpen, onClose, onSave, candidate = null }) => {
     team_id: '',
     description: '',
     linkedin_url: '',
-    photo: ''
+    profile_image: ''
   });
   const [errors, setErrors] = useState({});
   const [loading, setLoading] = useState(false);
@@ -18,7 +18,7 @@ const CandidateModal = ({ isOpen, onClose, onSave, candidate = null }) => {
         team_id: candidate.team_id || '',
         description: candidate.description || '',
         linkedin_url: candidate.linkedin_url || '',
-        photo: candidate.photo || ''
+            photo: candidate.profile_image || ''
       });
     } else {
       setFormData({
@@ -26,7 +26,7 @@ const CandidateModal = ({ isOpen, onClose, onSave, candidate = null }) => {
         team_id: '',
         description: '',
         linkedin_url: '',
-        photo: ''
+            photo: ''
       });
     }
     setErrors({});
@@ -36,7 +36,7 @@ const CandidateModal = ({ isOpen, onClose, onSave, candidate = null }) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: value
+      [name]: name === 'team_id' ? parseInt(value, 10) || '' : value
     }));
     // Clear error when user starts typing
     if (errors[name]) {
@@ -47,7 +47,8 @@ const CandidateModal = ({ isOpen, onClose, onSave, candidate = null }) => {
   const validate = () => {
     const newErrors = {};
     if (!formData.name.trim()) newErrors.name = 'Name is required';
-    if (!formData.team_id) newErrors.team_id = 'Team ID is required';
+    if (!formData.team_id || isNaN(formData.team_id)) newErrors.team_id = 'Team ID is required and must be a number';
+    if (!formData.linkedin_url.trim()) newErrors.linkedin_url = 'LinkedIn URL is required';
     
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
@@ -60,7 +61,17 @@ const CandidateModal = ({ isOpen, onClose, onSave, candidate = null }) => {
 
     setLoading(true);
     try {
-      await onSave(formData);
+      // Map photo to profile_image for backend, only if valid URL
+      let profile_image = null;
+      if (formData.photo && /^https?:\/\/.+\.(jpg|jpeg|png|gif)$/i.test(formData.photo.trim())) {
+        profile_image = formData.photo.trim();
+      }
+      const submitData = {
+        ...formData,
+        profile_image
+      };
+      delete submitData.photo;
+      await onSave(submitData);
       onClose();
     } catch (error) {
       console.error('Error saving candidate:', error);

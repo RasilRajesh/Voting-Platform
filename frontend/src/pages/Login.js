@@ -1,3 +1,4 @@
+import '../HomeResponsive.css';
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
@@ -101,14 +102,10 @@ const Login = () => {
       setError('LinkedIn is not configured. Please set REACT_APP_LINKEDIN_CLIENT_ID.');
       return;
     }
-
-    // Always reuse the exact origin the app is being served from
-    const REDIRECT_URI = encodeURIComponent(`${window.location.origin}/login`);
-    const STATE = Math.random().toString(36).substring(7);
-    const SCOPE = encodeURIComponent('openid profile email');
-    
+    const REDIRECT_URI = `${window.location.origin}/login`;
+    const STATE = 'securevote';
+    const SCOPE = 'r_liteprofile r_emailaddress';
     const linkedInAuthUrl = `https://www.linkedin.com/oauth/v2/authorization?response_type=code&client_id=${LINKEDIN_CLIENT_ID}&redirect_uri=${REDIRECT_URI}&state=${STATE}&scope=${SCOPE}`;
-    
     window.location.href = linkedInAuthUrl;
   };
 
@@ -300,7 +297,7 @@ const Login = () => {
       </div>
     </div>
   );
-};
+}
 
 export default Login;
 

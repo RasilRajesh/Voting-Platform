@@ -180,7 +180,7 @@ CORS_ALLOW_CREDENTIALS = True
 # Social Auth Settings
 AUTHENTICATION_BACKENDS = (
     'social_core.backends.google.GoogleOAuth2',
-    'social_core.backends.linkedin.LinkedinOAuth2',
+    'social_core.backends.linkedin.LinkedinOpenIdConnect',
     'django.contrib.auth.backends.ModelBackend',
 )
 
@@ -191,7 +191,7 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = config('GOOGLE_OAUTH2_SECRET', default='')
 # LinkedIn OAuth Settings
 SOCIAL_AUTH_LINKEDIN_OAUTH2_KEY = config('LINKEDIN_OAUTH2_KEY', default='')
 SOCIAL_AUTH_LINKEDIN_OAUTH2_SECRET = config('LINKEDIN_OAUTH2_SECRET', default='')
-SOCIAL_AUTH_LINKEDIN_OAUTH2_SCOPE = ['r_liteprofile', 'r_emailaddress']
+SOCIAL_AUTH_LINKEDIN_OAUTH2_SCOPE = ['openid', 'profile', 'email']
 SOCIAL_AUTH_LINKEDIN_OAUTH2_FIELD_SELECTORS = ['emailAddress', 'headline']
 SOCIAL_AUTH_LINKEDIN_OAUTH2_EXTRA_DATA = [
     ('id', 'id'),
